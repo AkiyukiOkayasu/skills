@@ -58,8 +58,6 @@ run close
 
 ## 新しい Gowin project を立ち上げる手順
 
-### 方法 A: `create_project` を使う
-
 `create_project` でゼロからプロジェクトを作成できる。
 
 **構文**:
@@ -69,13 +67,6 @@ create_project -name <prjName> -dir <path> -pn <pnName> [-device_version <arg>] 
 ```
 
 `create_project_example.tcl` をテンプレートとして使い、device / top / file list / pin option を実プロジェクトに合わせて調整する。
-
-### 方法 B: GUI で gprj を作る
-
-1. Gowin IDE で新規プロジェクト作成
-2. device を設定
-3. ピン制約や device 設定を確認
-4. `saveto -all_options` で設定を書き出し、`run_gowin.tcl` のベースにする
 
 ## Tcl テンプレート
 
@@ -139,7 +130,7 @@ puts "Closing and saving project..."
 run close
 ```
 
-## 外側のタスクランナーに残すべきもの
+## Tcl の外側で扱うもの
 
 - Gowin IDE の絶対パス解決
 - `DYLD_LIBRARY_PATH` など実行環境注入
@@ -147,8 +138,6 @@ run close
 - project ごとの複合 build フロー
 
 Tcl 側は、できるだけ「project をどう開いて何を設定するか」に集中させる。
-
-`just`、`make`、`cargo xtask` など、どのラッパーを使うかはプロジェクト側で決める。
 
 ## プロジェクト固有事項
 
@@ -171,7 +160,6 @@ Tcl 側は、できるだけ「project をどう開いて何を設定するか�
 ## アンチパターン
 
 - `cd` 前提の相対パスで script を書く
-- GUI で設定しただけで Tcl に落とさない
 - `impl/` 配下の成果物を入力ソースとして扱う
 - `run all` で必要になる file list 更新を忘れる
 - device 固有 option を説明なしにコピペする

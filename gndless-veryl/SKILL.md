@@ -1,6 +1,6 @@
 ---
 name: gndless-veryl
-description: Use when editing Veryl RTL, including formatting, checking, building generated RTL, choosing between veryl test and heavier simulation, and deciding when a project task runner should remain outside the skill.
+description: Use when editing Veryl RTL, including formatting, checking, building generated RTL, and choosing between veryl test and heavier simulation.
 ---
 
 # Gndless Veryl
@@ -16,7 +16,6 @@ description: Use when editing Veryl RTL, including formatting, checking, buildin
 ## 基本方針
 
 - 日常作業は `veryl` を直接使う
-- task runner は複数工程を束ねるときだけ使う
 - 簡単な検証は `veryl test` で書く
 - 複雑な検証や既存 SystemVerilog / C++ 資産を使う検証は別の simulation skill へ分ける
 - 生成物だけ見て編集せず、元の `.veryl` を直す
@@ -78,26 +77,18 @@ initial {
 - `veryl build`
 - `veryl test`
 
-## task runner を使う場面
-
-- Rust firmware 生成物も含めて統合確認したい
-- Gowin 合成や Fmax 確認まで必要
-- package 生成や書き込みも同時に行う
-- 既存テストベンチを repo 標準の入口から実行したい
-
 ## 変更後の確認
 
 - `.veryl` を触ったら、まず対象ディレクトリで `veryl check`
 - 小さいローカル検証なら `veryl test`
 - 生成物更新が必要なら `veryl build`
-- project 標準の統合確認があるなら最後にそれも実行する
+- 合成やタイミングが絡む変更なら、下流フローでも確認する
 - Rust や register map と契約がつながる変更なら、project 側 workflow も併用する
 
 ## アンチパターン
 
 - `target/` 配下の生成物を手で直す
 - Veryl 変更後に `veryl check` すら通さない
-- 単独で済む `veryl fmt` / `veryl check` まで task runner の新タスクにする
 - ちょっとした性質確認なのに最初から重いテストベンチを増やす
 - 契約信号を、相手側の更新なしに RTL だけ変える
 

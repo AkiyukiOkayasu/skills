@@ -1,6 +1,6 @@
 ---
 name: gndless-rust
-description: Use when editing Rust code in hardware or embedded repositories, including firmware crates, shared crates, direct cargo workflows, artifact generation boundaries, and deciding when a project task runner remains appropriate.
+description: Use when editing Rust code in hardware or embedded repositories, including firmware crates, shared crates, cargo-based verification, and integration points with generated artifacts.
 ---
 
 # Gndless Rust
@@ -15,10 +15,9 @@ description: Use when editing Rust code in hardware or embedded repositories, in
 
 ## 基本方針
 
-- 日常作業は `cargo` を直接使う
-- task runner は、生成物配置や他ツール連携のような複合作業に残す
-- 単独の `cargo fmt` / `cargo check` / `cargo test` はラッパーに閉じ込めすぎない
+- まず対象 crate 単位で `cargo` による確認を行う
 - 組み込み firmware では、静的検証と最終バイナリ検証を分けて考える
+- 生成物や他言語との境界がある変更は、契約先もセットで確認する
 
 ## 日常コマンド
 
@@ -31,26 +30,20 @@ description: Use when editing Rust code in hardware or embedded repositories, in
 組み込み target を使う場合は、プロジェクト側 target triple を付ける。  
 host 実行テストが必要なら、host target を明示して `cargo test --target <host-target>` を使う。
 
-## task runner を使う場面
-
-- `firmware.bin` / `firmware.hex` の生成と配置
-- FPGA RTL 側へ成果物を渡す
-- サイズ制約を実バイナリで確認したい
-- 他ツールや合成フローも含めて一気に確認したい
-
 ## 検証の基準
 
 - `.rs` を触ったら、まず対象 crate に対して `cargo` ベースの確認を行う
 - MMIO や生成物契約を変えたら、相手側も必ず更新する
-- task runner があるプロジェクトでは、最後に project 標準の統合確認も行う
+- サイズ制約があるなら、最終バイナリでも確認する
+- 生成物を他ツールへ渡す構成なら、反映先との整合も確認する
 
 ## アンチパターン
 
 - `cargo check` で十分な段階なのに、毎回合成や重い統合ビルドまで回す
-- hex 配置が要る処理と、純粋な Rust 静的検証を区別しない
+- 静的検証と最終生成物確認を区別しない
 - サイズ制約があるのに、実バイナリサイズを確認せず進める
 - shared crate の変更で依存先側確認を省く
 
 ## プロジェクト固有事項
 
-- target triple、禁止機能、サイズ制約、統合検証コマンドはプロジェクト側の skill に置く
+- target triple、禁止機能、サイズ制約、生成物配置先、統合検証コマンドはプロジェクト側の skill に置く
