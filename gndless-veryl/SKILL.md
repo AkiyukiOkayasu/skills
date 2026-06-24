@@ -92,6 +92,29 @@ initial {
 - `veryl build`
 - `veryl test`
 
+## `veryl publish`
+
+- `veryl publish` の前に、まず `Veryl.toml` の version を更新する
+- version 更新だけを一度コミットする
+- その後に `veryl publish` を実行する
+- publish 後は `Veryl.pub` に version と commit の対応が記録される
+- `Veryl.pub` の更新を確認して、もう一度コミットする
+
+推奨手順:
+
+1. `Veryl.toml` の version を更新する
+2. `git add Veryl.toml`
+3. `git commit -m "update: Veryl package version を vX.Y.Z に上げる"`
+4. `veryl publish`
+5. `git add Veryl.pub`
+6. `git commit -m "update: Veryl.pub を vX.Y.Z publish 結果で更新する"`
+
+注意:
+
+- version 更新前に `veryl publish` しない
+- `Veryl.toml` と `Veryl.pub` を 1 コミットにまとめない
+- publish 時点の commit が `Veryl.pub` に紐づくので、publish 前の状態を先に確定させる
+
 ## 変更後の確認
 
 - `.veryl` を触ったら、まず対象ディレクトリで `veryl check`
