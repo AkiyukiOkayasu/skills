@@ -1,0 +1,5 @@
+version: 1
+agent:
+  display_name: "Gndless PDF"
+  short_description: "PDF の必要部分だけを抽出または画像化する"
+  default_prompt: "Use $gndless-pdf to inspect a PDF, extract only the relevant pages, or render page images for visual documents while keeping context usage low."
