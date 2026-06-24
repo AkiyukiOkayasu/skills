@@ -23,9 +23,24 @@ description: Use when editing Veryl RTL, including formatting, checking, buildin
 ## キャスト仕様
 
 - `as 32` のように、`as` の後ろに幅を指定してキャストする
+- `as logic<32>` や `as bit<32>` のように型名を書くのは誤り
 - `as` で signed / unsigned の属性は変わらない
 - 値を符号付きとして扱うときはシステム関数 `$signed()` を使う
 - `$signed()` は「符号付きとして扱う」だけで、符号ビットを勝手に書き換えない
+
+正誤例:
+
+```veryl
+let a: logic<32> = value as 32;          // correct
+let b: logic<32> = value as logic<32>;   // wrong
+let c: logic<32> = value as bit<32>;     // wrong
+let d: i32       = $signed(value as 32); // signed として扱いたい場合
+```
+
+覚え方:
+
+- `as` の右側には「型」ではなく「幅」を書く
+- signed / unsigned を変えたいなら `as` ではなく `$signed()` を使う
 
 ## システム関数 / システムタスク
 
