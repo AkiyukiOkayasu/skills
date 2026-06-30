@@ -38,10 +38,7 @@ host 実行テストが必要なら、host target を明示して `cargo test --
 
 ## 組み込みRustの注意点
 
-target環境に依存しないロジックは別のno_std crateとして切り出し、host環境でtestする。
-
-組み込み target を使う場合は、プロジェクト側 target triple を付ける。  
-host 実行テストが必要なら、host target を明示して `cargo test --target <host-target>` を使う。
+target環境に依存しないロジックは、独立したno_std crateとして切り出し、host環境でtestする。
 
 ## アンチパターン
 
