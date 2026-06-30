@@ -26,7 +26,12 @@ description: Use when editing Rust code in hardware or embedded repositories, in
 - `cargo clippy -- -D warnings`
 - `cargo test`
 
-組み込み target を使う場合は、プロジェクト側 target triple を付ける。  
+mixed host / embedded 構成では、対象 crate のディレクトリへ移動してから `cargo` を実行する。  
+`--manifest-path` だけで repo ルートから実行すると、その crate 配下の `.cargo/config.toml` にある
+`build.target` などを期待どおり拾えないことがある。
+
+組み込み target を使う場合は、まず対象 crate ディレクトリでプロジェクト側 `.cargo/config.toml` を使う。  
+crate ディレクトリ外から実行する必要がある場合だけ、target triple を明示的に付ける。  
 host 実行テストが必要なら、host target を明示して `cargo test --target <host-target>` を使う。
 
 ## 検証の基準
