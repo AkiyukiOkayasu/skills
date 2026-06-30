@@ -22,7 +22,6 @@ description: Use when editing Rust code in hardware or embedded repositories, in
 ## 日常コマンド
 
 - `cargo fmt`
-- `cargo fmt --check`
 - `cargo check`
 - `cargo clippy -- -D warnings`
 - `cargo test`
@@ -37,9 +36,16 @@ host 実行テストが必要なら、host target を明示して `cargo test --
 - サイズ制約があるなら、最終バイナリでも確認する
 - 生成物を他ツールへ渡す構成なら、反映先との整合も確認する
 
+## 組み込みRustの注意点
+
+target環境に依存しないロジックは別のno_std crateとして切り出し、host環境でtestする。
+
+組み込み target を使う場合は、プロジェクト側 target triple を付ける。  
+host 実行テストが必要なら、host target を明示して `cargo test --target <host-target>` を使う。
+
 ## アンチパターン
 
-- `cargo check` で十分な段階なのに、毎回合成や重い統合ビルドまで回す
+- `cargo check` で十分な段階なのに、毎回重い統合ビルドやclippyまで回す
 - 静的検証と最終生成物確認を区別しない
 - サイズ制約があるのに、実バイナリサイズを確認せず進める
 - shared crate の変更で依存先側確認を省く
