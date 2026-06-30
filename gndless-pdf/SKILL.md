@@ -34,16 +34,22 @@ description: Use when you need to inspect a local PDF or a PDF found on the web,
 - 実体は `scripts/pdf_selective_ingest.py`
 - 変換バックエンドは `opendataloader-pdf`
 - ローカル PDF と HTTP/HTTPS の PDF URL を両方受けられる
-- 画像化は `pdftoppm` を使って PNG を出力する
+- `inspect` は `pdfinfo`、`render` は `pdftoppm` を使う
+- `pdfinfo` と `pdftoppm` は macOS 標準ではない。通常は Poppler 由来なので、未導入なら `brew install poppler` を使う
+- 一部の実行環境では Poppler が同梱されていて追加 install なしで動くことがある
 
 ## 事前準備
 
 - `extract` は hybrid backend が必要。`inspect` と `render` だけなら backend は不要
+- `inspect` と `render` には Poppler の `pdfinfo` / `pdftoppm` が必要
 - `extract` の前に、別ターミナルで毎回明示的に `opendataloader-pdf-hybrid` を起動する
 - port は既定の `5002` を使えばよいので、通常は `--hybrid-url` を付けなくてよい
 - 初回起動や初回変換では docling 系モデルのダウンロードが走ることがあり、ディスク 1-2 GB、メモリ 2-4 GB 程度を見込む
 
 ```bash
+# macOS で Poppler が未導入なら先に入れる
+brew install poppler
+
 # 初回または更新時だけ
 pip install -U "opendataloader-pdf[hybrid]"
 
@@ -51,9 +57,10 @@ pip install -U "opendataloader-pdf[hybrid]"
 opendataloader-pdf-hybrid --port 5002
 ```
 
+- `inspect` で `pdfinfo: command not found`、`render` で `pdftoppm: command not found` が出たら Poppler 未導入を疑う
 - 接続エラー時は backend 未起動をまず疑う
 - 非既定の host / port で起動した場合だけ `extract --hybrid-url http://host:port` を使う
-- Codex の sandbox で `Operation not permitted` が出た場合は、server の port bind と client の localhost 接続を権限付きで再実行する
+- Codex のような sandbox 環境で `Operation not permitted` が出た場合は、server の port bind と client の localhost 接続を権限付きで再実行する
 
 ## 典型手順
 
@@ -104,7 +111,7 @@ python3 ~/.agents/skills/gndless-pdf/scripts/pdf_selective_ingest.py extract htt
 - backend は毎回明示的に起動する方が状態が分かりやすく、接続先の取り違えも起きにくい
 - ただし PDF 1 本ごとに backend を起動し直すのは UX が悪い。1 回の調査や会話ターンの間は同じ backend プロセスを使い回す
 - backend 未起動時は `Could not connect to hybrid backend at http://localhost:5002` や `Hybrid server is not available at http://localhost:5002` のような接続エラーになり得る
-- sandbox で server 起動に失敗すると `error while attempting to bind on address ('0.0.0.0', 5002): [errno 1] operation not permitted` が出ることがある
+- sandbox 環境で server 起動に失敗すると `error while attempting to bind on address ('0.0.0.0', 5002): [errno 1] operation not permitted` が出ることがある
 - `--hybrid-fallback` を付けると backend 障害時も Java-only で続行できるが、精度前提が変わるので必要時だけ使う
 - 回路図や図面は無理にテキスト抽出せず、先に画像化して読む
 - `extract` は常に hybrid なので、通常は抽出方式の分岐判断を増やさない
