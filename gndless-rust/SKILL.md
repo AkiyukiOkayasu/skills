@@ -38,7 +38,23 @@ host 実行テストが必要なら、host target を明示して `cargo test --
 
 ## 組み込みRustの注意点
 
-target環境に依存しないロジックは、独立したno_std crateとして切り出し、host環境でtestする。
+- target環境に依存しないロジックは、独立したno_std crateとして切り出し、host環境でtestする
+- 常にreleaseビルドを使用する。組み込みではdebugビルドは最終生成物のサイズや性能の問題から使わない
+- cargo-binutilsでバイナリサイズやセクション情報を確認することができる
+- Cargo.tomlのprofile設定で、以下のものから始める。ROMサイズの制限が厳しい場合は、debug = falseにしてもよい。
+
+```Cargo.toml
+[profile.release]
+debug = 2
+lto = true
+opt-level = 'z'
+
+[profile.dev]
+debug = 2
+lto = true
+opt-level = "z"
+```
+
 
 ## アンチパターン
 
