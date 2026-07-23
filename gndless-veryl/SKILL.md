@@ -20,6 +20,12 @@ description: Use when editing Veryl RTL, including formatting, checking, buildin
 - 複雑な検証や既存 SystemVerilog / C++ 資産を使う検証は別の simulation skill へ分ける
 - 生成物だけ見て編集せず、元の `.veryl` を直す
 
+## 命名のデフォルト
+
+- ファイルは `snake_case`、public module/interface は `UpperCamelCase`、function/local/instance/port は `snake_case`、param/const は `UPPER_SNAKE_CASE`、package は `PascalCase` を使う。
+- port は `i_`/`o_` や `_in`/`_out` を付けず、意味名を使う。std interfaceの既定名は例外とする。
+- clock portは `clk`、system reset portは `rst` を原則とする。Verylの予約語 `clock` / `reset` を識別子として使う必要がある場合のみ、`r#clock` / `r#reset` でescapeする。機能resetは意味名を使い、型は真偽型の指針で判断する。設計上2値の真偽制御なら `bbool`、`x/z` を保持・伝播する必要があれば `lbool`、ビット列やプロトコル線なら `logic` とする。
+
 ## キャスト仕様
 
 - `as 32` のように、`as` の後ろに幅を指定してキャストする
