@@ -81,8 +81,16 @@ initial {
 - `bbool` は `bit<1>` のブーリアン型エイリアス
 - `lbool` は `logic<1>` のブーリアン型エイリアス
 - `true` と `false` も使える
-- 使えるときは積極的に `bbool` を使う
-- `lbool` は `logic` の意味が必要な場合に使う
+- 型の本質的な差は、`bbool` が2値（`0/1`）、`lbool` が4値（`0/1/x/z`）であること
+- `bbool` は、構成値に限らず、(1) 設計上0/1だけを保証でき、(2) 真偽値（`true`/`false`）として表現でき、(3) `bbool`にすることで意図の可読性が高まる信号・値に使う。`param`、`const`、入力、出力、内部レジスタ、関数戻り値、構造体フィールドを区別しない
+- `lbool` は「意味は真偽値だが、未初期化・CDC・外部入力などによる`x/z`を保持して伝播させたい」場合に使う
+- `logic` は、真偽値ではなく1bitの符号化・波形・プロトコル線として扱う値、または`x/z`を検証で観測したい値に使う。0/1しか現れない生のシリアルビットでも、`true`/`false`よりビット値として読む方が自然なら`logic`のままにする
+- `enable`、`reset`、`copy_permitted`、`non_audio`、`original`、`invalid`、`locked`、`error`などは名前だけで決めず、設計上`x/z`が合法か、初期化後に必ず0/1になるかを確認して判断する
+- `true` / `false` を使えることと、型を `bbool` / `lbool` にすることは別。信号名だけで型を変えない
+- `logic` から `bbool` への変換は`x/z`を失うため、暗黙変換や一括置換を避け、2値化が仕様であることを確認する
+- 公式stdの用例は参考にするが、SystemVerilog互換やstd内の採用箇所を型選択の上限にしない
+- 参照: https://doc.veryl-lang.org/book/05_language_reference/03_data_type/01_builtin_type.html
+- 参照: https://std.veryl-lang.org/async_fifo.html
 
 ## 通常使うコマンド
 
