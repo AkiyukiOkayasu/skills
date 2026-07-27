@@ -45,7 +45,6 @@ veryl build
 ## Cast
 
 - `as 32`のように、`as`の後ろにはwidthを指定してcastする。
-- `as logic<32>`や`as bit<32>`のように型名を書くのは誤り。
 - `as`でsigned/unsignedの属性は変わらない。
 - 値をsignedとして扱うときはsystem function`$signed()`を使う。
 - `$signed()`は「signedとして扱う」だけで、sign bitを勝手に書き換えない。
@@ -59,10 +58,6 @@ let c: logic<32> = value as bit<32>;     // wrong
 let d: i32       = $signed(value as 32); // signed として扱いたい場合
 ```
 
-Rule:
-
-- `as`の右側にはtypeではなくwidthを書く。
-- signed/unsignedを変えたいなら`as`ではなく`$signed()`を使う。
 
 ## System functions / system tasks
 
@@ -107,12 +102,10 @@ initial {
 - `bbool`は、(1)設計上0/1だけを保証でき、(2)Boolean value（`true`/`false`）として表現でき、(3)`bbool`にすることで意図の可読性が高まるsignal/valueに使う。param、const、input、output、internal register、function return value、struct fieldを区別しない。
 - `lbool`は「意味はBooleanだが、未初期化・CDC・external inputなどによる`x/z`を保持して伝播させたい」場合に使う。
 - `logic`は、Booleanではなく1bitのencoding・waveform・protocol signalとして扱うvalue、または`x/z`を検証で観測したいvalueに使う。0/1しか現れないraw serial bitでも、`true`/`false`よりbit valueとして読む方が自然なら`logic`のままにする。
-- `enable`、`reset`、`copy_permitted`、`non_audio`、`original`、`invalid`、`locked`、`error`などはnameだけで決めず、設計上`x/z`が合法か、初期化後に必ず0/1になるかを確認する。
 - `true`/`false`を使えることと、型を`bbool`/`lbool`にすることは別。信号名だけで型を変えない。
 - `logic`から`bbool`への変換は`x/z`を失うため、暗黙変換や一括置換を避け、2値化が仕様であることを確認する。
-- 公式stdの用例は参考にするが、SystemVerilog互換やstd内の採用箇所をtype選択の上限にしない。
 - 参照: https://doc.veryl-lang.org/book/05_language_reference/03_data_type/01_builtin_type.html
-- 参照: https://std.veryl-lang.org/async_fifo.html
+
 
 ## RTL記述の規約
 
@@ -137,11 +130,6 @@ initial {
 - memoryは実装前に1R1W/1RW/2RW、read latency、read-during-write、byte enable、初期化、FPGA BRAM推論条件を決める。組み合わせreadを前提にして後から同期RAMへ置換しない。
 - 大容量arrayは原則resetせず、valid bit、tag/epoch、初期化sequenceで無効状態を管理する。FPGA vendor primitiveはwrapperへ隔離し、上位Veryl moduleから直接参照しない。
 
-## fixed-point・DSP
-
-- format（total width、integer/fraction bits、signedness）、rounding、overflow、latency、stall/backpressureをmodule契約に含める。
-- 加算・乗算・accumulatorは必要な拡張幅とguard bitを確保する。丸めは十分広い値のまま行い、その後にsaturationまたは明示的truncationを行う。先に幅を切ってoverflow情報を失わない。
-
 ## 検証と生成RTL
 
 - 検証はcomb function → 小さなsequential primitive → FIFO/RAM → protocol adapter → subsystem → topの順に小さく分ける。
@@ -163,6 +151,7 @@ initial {
 ## Anti-patterns
 
 - 生成物を直接編集する。
+- 既知値が不要なmoduleにresetを付ける。
 - `veryl check`を通さずにRTLや契約信号を変更する。
 - `unsafe (cdc)`だけでCDCを完了したとみなす。
 - memory arrayを全resetしてRAM/BRAM推論を壊す。
