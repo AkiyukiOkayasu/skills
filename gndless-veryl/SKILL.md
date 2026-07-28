@@ -19,13 +19,12 @@ Veryl RTLの編集、検証、生成RTLの更新を扱う。対象は`.veryl`、
 `.veryl`を変更したら、対象projectで原則として次を実行する。
 
 ```text
-veryl fmt --check
+veryl fmt
 veryl check
 veryl test
 veryl build
 ```
 
-- format変更には`veryl fmt`を使う。
 - 小さなunit testは`veryl test`とnative testを優先する。長いtestは通常skipし、必要時だけ`veryl test --ignored`を使う。
 - built-in simulatorのbackend差を確認する場合は`veryl test --backend-validate`を使う。`--wave`は失敗の再現・波形解析時に限定する。
 - native testで表現しにくいsystem-level検証だけ、project側で定義された外部simulation workflowを併用する。
@@ -45,6 +44,7 @@ veryl build
 - public port、module契約、register width、accumulator width、signednessが重要な境界では型を省略しない。型推論は内部の短い式に限定する。
 - `logic<W>`はpacked、`[N]`はunpacked。address、index、count、pointer、byte offsetを同じ意味として扱わない。
 - FSMはenum、pipelineやbusの関連信号はstructで束ねる。ただしpublic transactionとinternal transactionを分離し、巨大なstructでmoduleを密結合にしない。
+- enumの型は原則として省略し、幅は推論させる。
 - 外部からoverrideする値は`param`、内部で導出する値は`const`にする。parameterの範囲、対応するdepth、width、latency、memory inference条件をmodule documentationに書く。
 
 ## Cast
@@ -104,10 +104,9 @@ initial {
 - `lbool`は`logic<1>`のBoolean type alias。
 - `true`と`false`も使える。
 - 型の本質的な差は、`bbool`が2値（`0/1`）、`lbool`が4値（`0/1/x/z`）であること。
-- `bbool`は、(1)設計上0/1だけを保証でき、(2)Boolean value（`true`/`false`）として表現でき、(3)`bbool`にすることで意図の可読性が高まるsignal/valueに使う。param、const、input、output、internal register、function return value、struct fieldを区別しない。
+- `bbool`は、(1)設計上0/1だけを保証でき、(2)Boolean value（`true`/`false`）として表現でき、(3)`bbool`にすることで意図の可読性が高まるsignal/valueに使う。
 - `lbool`は「意味はBooleanだが、未初期化・CDC・external inputなどによる`x/z`を保持して伝播させたい」場合に使う。
 - `logic`は、Booleanではなく1bitのencoding・waveform・protocol signalとして扱うvalue、または`x/z`を検証で観測したいvalueに使う。0/1しか現れないraw serial bitでも、`true`/`false`よりbit valueとして読む方が自然なら`logic`のままにする。
-- `true`/`false`を使えることと、型を`bbool`/`lbool`にすることは別。信号名だけで型を変えない。
 - `logic`から`bbool`への変換は`x/z`を失うため、暗黙変換や一括置換を避け、2値化が仕様であることを確認する。
 - 参照: https://doc.veryl-lang.org/book/05_language_reference/03_data_type/01_builtin_type.html
 
@@ -118,7 +117,6 @@ initial {
 - `always_ff`内の`=`はnonblocking相当へ変換される。各registerにownerを一つだけ置き、reset、flush、stall、通常更新、holdの優先順位を明示する。
 - `valid`とpayload、FIFO pointerとcount、requestの各fieldなど同じtransactionに属する状態は同じ更新規則で扱う。stall中にpayloadだけ、flush時にvalidだけがずれないようにする。
 - FSMはstate registerとnext-state logicを分離し、反復回数はstateを増やさずcounterで表す。illegal stateの復帰またはassertion方針を決める。
-- `gen`/generateはlane、bank、stageなどの構造複製に限定する。runtime loopと混同しない。非2冪depthを許す場合はpointerのwrapを明示する。
 
 ## Clock、reset、CDC
 
@@ -140,7 +138,6 @@ initial {
 - 検証はcomb function → 小さなsequential primitive → FIFO/RAM → protocol adapter → subsystem → topの順に小さく分ける。
 - module boundaryにvalid安定、full/empty、alignment、one-hot、illegal opcode、grant排他などのcontract assertionを置く。
 - native testは高速unit testの基本とする。signed arithmetic、X/Z、memory read-during-write、generated clock、async reset、simulator依存system functionはreference modelやproject側のsystem-level testでもcross-checkする。
-- 波形は通常testで常時生成せず、失敗再現時に対象signalを絞って保存する。
 - 下流EDAが返す生成RTLの行番号はsource mapでVerylへ戻す。生成RTL、filelist、module hierarchyのdiffもtoolchain更新時に確認する。
 - FPGAではvendor primitiveを隔離し、低速処理は新しいderived clockよりclock enableを優先する。合成後にBRAM、DSP、carry、LUTなどのinference結果をreportで確認する。
 
