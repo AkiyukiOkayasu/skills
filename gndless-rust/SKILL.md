@@ -26,6 +26,7 @@ description: Use when editing Rust code in hardware or embedded repositories, in
 ### 日本語
 
 - 主に自分が使うプロジェクトでは本文を日本語で記載する。既存のプロジェクト方針、公開 API の言語、周辺の doc comment が別の規約を定めている場合は、その方針を優先する。
+- 簡単な英語の専門用語や短い複合語は英語のまま記載し、`AES3 professional transmitter` を `AES3 professional送信機` のような不自然な和英混在へ変換しない
 - 見出しや箇条書きなど1行で完結する記述は末尾に句点を付けず、日本語の文末は「〜する」より「〜を確認」「〜を記載」のような体言止めを優先
 - 見出しや箇条書き以外の複数行にわたる詳細説明は、各文の末尾に句点を付加
 

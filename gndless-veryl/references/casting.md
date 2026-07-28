@@ -1,0 +1,67 @@
+# Cast
+
+Veryl の cast、width 変更、signed/unsigned 変換を扱う場合に参照する。
+
+cast を追加・変更する前に、source width、source signedness、target width、target signedness、truncation の有無を個別に確認する。
+
+## Width cast
+
+- `value as WIDTH` は SystemVerilog の `WIDTH'(value)` に変換され、値の bit width だけを変更
+- `WIDTH` には数値だけでなく width parameter や const も使用可能
+- target width が広い場合、source が signed なら sign extension、unsigned なら zero extension
+- target width が狭い場合、上位 bit を切り捨てて下位 `WIDTH` bit を保持
+- width cast 自体は signed/unsigned 属性を変更しない
+- `as logic<WIDTH>`、`as bit<WIDTH>`、`as signed logic<WIDTH>` は使用せず、width cast は `as WIDTH` と記載
+
+## Signedness
+
+- `$signed(value)` と `$unsigned(value)` は bit width を変えず、式を signed/unsigned として解釈
+- widening の前に `$signed()` を適用すると sign extension、前に `$unsigned()` を適用すると zero extension
+- widening 後の `$signed()` / `$unsigned()` は既に拡張された bit pattern の属性だけを変更するため、cast の順序を明示
+
+`unsigned8 = 8'h80`、`signed8 = signed 8'h80` の場合:
+
+```veryl
+let a: logic<16>        = unsigned8 as 16;          // 16'h0080: zero extension
+let b: signed logic<16> = signed8 as 16;            // 16'hff80: sign extension
+let c: signed logic<16> = $signed(unsigned8) as 16; // 16'hff80: signed化してから拡張
+let d: signed logic<16> = $signed(unsigned8 as 16); // 16'h0080: zero extension後にsigned化
+let e: logic<16>        = $unsigned(signed8) as 16; // 16'h0080: unsigned化してから拡張
+let f: logic<16>        = $unsigned(signed8 as 16); // 16'hff80: sign extension後にunsigned化
+```
+
+## Fixed and user-defined type cast
+
+- `as u8/u16/u32/u64`、`as i8/i16/i32/i64` など fixed integer type への cast は target width と結果の signedness を指定
+- fixed integer type cast でも widening 前の source signedness が extension を決めるため、unsigned source の `as i16` は source bit pattern を signed 8bit として sign extension しない
+- unsigned bit pattern を signed として sign extension する場合は `$signed(value) as WIDTH` を使用
+- enum など user-defined type への変換は `value as TypeName` を使用
+- user-defined type cast では encoding の対応と illegal value の扱いを別途確認
+
+```veryl
+let a: logic<16>        = unsigned8 as u16;         // unsigned 16bit
+let b: signed logic<16> = unsigned8 as i16;         // signed 16bitだが値は16'h0080
+let c: signed logic<16> = $signed(unsigned8) as 16; // signed 8bitとして解釈して16'hff80へ拡張
+let d: State            = raw_state as State;       // user-defined enumへcast
+```
+
+## Truncation
+
+- narrowing は上位 bit を失うため、意図した modulo / slice 動作であることを確認
+- signed value の narrowing でも下位 bit だけが残り、数値範囲や符号が保存されるとは限らない
+- truncation が仕様なら `as WIDTH` で意図を明示し、境界値、負値、MSB=1、all-ones を test
+
+```veryl
+let low: logic<8> = value16 as 8; // value16[7:0]を保持
+```
+
+## Verification
+
+- cast を含む式は `veryl check` だけで終えず、生成 SystemVerilog の cast 順序を確認
+- widening は source の MSB が1の値、narrowing は切り捨てられる上位 bit が1の値を test
+- arithmetic の前後で cast する場合は、演算 width と signedness が変わる位置を確認
+
+参照:
+
+- https://doc.veryl-lang.org/book/05_language_reference/04_expression/10_type_cast.html
+- https://doc.veryl-lang.org/book/07_appendix/01_formal_syntax.html
