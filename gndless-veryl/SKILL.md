@@ -17,12 +17,32 @@ Veryl RTLの編集、検証、生成RTLの更新を扱う。対象は`.veryl`、
 ## Documentation comments
 
 - Rust の doc comment の慣習を基本とし、Veryl で doc comment を付けられる公開 module、interface、function、型、port、parameter、const などには、利用者が契約を理解できるように記載する。
-- 主に自分が使うプロジェクトでは本文を日本語で記載する。既存のプロジェクト方針、公開 API の言語、周辺の doc comment が別の規約を定めている場合は、その方針を優先する。
+
+### 日本語
+
+- 主に自分が使うプロジェクトでは本文を日本語で記載する。既存のプロジェクト方針、公開 API の言語、周辺の doc comment が別の規約を定めている場合は、その方針を優先する
+- 見出しや箇条書きなど1行で完結する記述は末尾に句点を付けず、日本語の文末は「〜する」より「〜を確認」「〜を記載」のような体言止めを優先
+- 見出しや箇条書き以外の複数行にわたる詳細説明は、各文の末尾に句点を付加する
+
+### 引数と宣言
+
 - module の `param`、port、function の引数など引数に相当する宣言の doc comment は、原則として宣言と同じ行の末尾に `///` で記載する。説明が複数行にわたる場合に限り、宣言の直前に複数行の `///` ブロックを置いてよい。1行だけの説明を宣言前の独立した行に置かない。
+
+### 構成
+
 - 説明の先頭に対象の役割や基本動作を短くまとめ、その後に必要な詳細を書く。特に parameter の範囲、対応する width、depth、latency、reset、clock domain、memory inference 条件など、module の契約に関わる情報を記載する。
 - `Arguments`、`Returns`、`Errors`、`Panics`、`Safety`、`Examples` など、簡単な英語の方が分かりやすい定型見出しは英語で記載する。見出しの下の説明は原則日本語で記載する。
 - 文の途中では改行しない。1行あたりの文字数制限は設けず、段落、箇条書き、コードブロックなどMarkdown上の意味の区切りで改行する。
 - doc comment の例は対象 project の Veryl toolchain で検証可能な最小限の形にし、module の接続方法、parameter の設定、信号の意味、期待される動作が分かるようにする。
+
+### 図と波形
+
+- Veryl doc comment で使える Markdown の `mermaid` と `wavedrom` のコードブロックを積極的に使い、文章だけでは把握しにくい構造、データフロー、FSM、依存関係、protocol、clock domain、reset sequence を図示する
+- cycle 単位の動作、ready/valid、request/response、FIFO、pipeline、reset、CDC など時間変化を伴う契約は、可能な限り WaveDrom で示す
+- architecture、module 間の接続、state transition、sequence、transaction の関係は、可能な限り Mermaid で示す
+- WaveDrom の波形が module port の動作を表せる場合は `wavedrom,test` code block を積極的に使い、`veryl test` で documentation test として検証する
+- ドキュメント生成時は `veryl doc` を使い、生成された図と波形が説明対象の実装・契約と一致することを確認する
+- 参照: https://doc.veryl-lang.org/book/ja/06_development_environment/10_documentation.html
 
 ```veryl
 pub module HpfShiftSigned #(
