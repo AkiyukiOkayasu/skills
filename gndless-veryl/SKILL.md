@@ -14,6 +14,30 @@ Veryl RTLの編集、検証、生成RTLの更新を扱う。対象は`.veryl`、
 - 編集対象は`.veryl`を正とする。`target/`などの生成`.sv`、`.sv.map`、`.f`を手で直さない。
 - Verylの短い構文ではなく、生成回路のwire/register、bit width、signedness、mux・logic depth、RAM/FF inference、reset cost、clock domainを確認する。
 
+## Documentation comments
+
+- Rust の doc comment の慣習を基本とし、Veryl で doc comment を付けられる公開 module、interface、function、型、port、parameter、const などには、利用者が契約を理解できるように記載する。
+- 主に自分が使うプロジェクトでは本文を日本語で記載する。既存のプロジェクト方針、公開 API の言語、周辺の doc comment が別の規約を定めている場合は、その方針を優先する。
+- module の `param`、port、function の引数など引数に相当する宣言の doc comment は、原則として宣言と同じ行の末尾に `///` で記載する。説明が複数行にわたる場合に限り、宣言の直前に複数行の `///` ブロックを置いてよい。1行だけの説明を宣言前の独立した行に置かない。
+- 説明の先頭に対象の役割や基本動作を短くまとめ、その後に必要な詳細を書く。特に parameter の範囲、対応する width、depth、latency、reset、clock domain、memory inference 条件など、module の契約に関わる情報を記載する。
+- `Arguments`、`Returns`、`Errors`、`Panics`、`Safety`、`Examples` など、簡単な英語の方が分かりやすい定型見出しは英語で記載する。見出しの下の説明は原則日本語で記載する。
+- 文の途中では改行しない。1行あたりの文字数制限は設けず、段落、箇条書き、コードブロックなどMarkdown上の意味の区切りで改行する。
+- doc comment の例は対象 project の Veryl toolchain で検証可能な最小限の形にし、module の接続方法、parameter の設定、信号の意味、期待される動作が分かるようにする。
+
+```veryl
+pub module HpfShiftSigned #(
+    param DATA_WIDTH: u32 = 16, /// 入出力データ幅
+    param SHIFT     : u32 = 4 , /// シフト量 (1以上)。大きいほど低いカットオフ周波数
+) (
+    clk   : input  clock                   , /// システムクロック
+    rst   : input  reset                   , /// リセット (出力を0に初期化)
+    enable: input  bbool                   , /// イネーブル信号 (trueでフィルタ更新)
+    x     : input  signed logic<DATA_WIDTH>, /// 入力サンプル (符号付き)
+    y     : output signed logic<DATA_WIDTH>, /// フィルタ出力 (符号付き)
+) {
+}
+```
+
 ## Workflow
 
 `.veryl`を変更したら、対象projectで原則として次を実行する。

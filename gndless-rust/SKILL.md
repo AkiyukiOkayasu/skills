@@ -19,6 +19,15 @@ description: Use when editing Rust code in hardware or embedded repositories, in
 - 組み込み firmware では、静的検証と最終バイナリ検証を分けて考える
 - 生成物や他言語との境界がある変更は、契約先もセットで確認する
 
+## Documentation comments
+
+- Rust の doc comment の慣習に従い、公開 API、module、型、field、function、定数など利用者が契約を理解する必要がある対象には `///` を使い、crate-level documentation には `//!` を使う。
+- 主に自分が使うプロジェクトでは本文を日本語で記載する。既存のプロジェクト方針、公開 API の言語、周辺の doc comment が別の規約を定めている場合は、その方針を優先する。
+- 説明の先頭に対象の役割や基本動作を短くまとめ、その後に必要な詳細を書く。実装を言い換えるだけでなく、利用条件、保証、状態変化、副作用、エラー、panic、安全性など利用者が判断に必要とする情報を記載する。
+- `Arguments`、`Returns`、`Errors`、`Panics`、`Safety`、`Examples` など、簡単な英語の方が分かりやすい定型見出しは英語で記載する。見出しの下の説明は原則日本語で記載する。
+- 文の途中では改行しない。1行あたりの文字数制限は設けず、段落、箇条書き、コードブロックなどMarkdown上の意味の区切りで改行する。
+- doc comment の例は可能な限り `rustdoc` で実行可能な形にし、APIの使い方と期待される結果が分かる最小限の例にする。
+
 ## 日常コマンド
 
 - `cargo fmt`
