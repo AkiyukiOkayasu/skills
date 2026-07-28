@@ -32,6 +32,11 @@ veryl build
 - `veryl synth`は設計探索用の概算であり、vendor synthesis、place-and-route、timing sign-offの代替にしない。
 - Veryl更新時は`veryl migrate --check`を先に実行する。migrationを実行した場合は`fmt`、`check`、`test`、`build`後にVerylと生成RTLのdiffを確認する。
 
+## Generic functionとcomponent parameter
+
+- 生成SystemVerilogの可視性制約により、module、interface、packageなどのcomponent namespace内で定義したgeneric functionへ、呼び出し元moduleのparameterやそこから導出したconstをgeneric actual argumentとして渡せない場合がある。Veryl #3110も参照する。
+- parameterized moduleから幅、shift量、policyなどを受け取る再利用可能なgeneric helperは、project-scope functionとして定義する。dependencyから公開する場合は`pub function`とし、呼び出し側では`project_name::function_name::<...>`を直接使用する。
+
 ## Naming and types
 
 - projectの既存規約を優先する。規約がなければ、fileは`snake_case`、public module/interfaceは`UpperCamelCase`、function/local/instance/portは`snake_case`、param/constは`UPPER_SNAKE_CASE`、packageは`PascalCase`を使う。
