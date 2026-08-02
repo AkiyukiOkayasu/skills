@@ -1,4 +1,4 @@
 interface:
   display_name: "Plan Workflow"
-  short_description: "Manage checkbox-based Markdown plans and commits"
-  default_prompt: "Use $plan-workflow to manage a Markdown plan under plan/ and include completed items in commits."
+  short_description: "Plan, independently review, and track implementation work"
+  default_prompt: "Use $plan-workflow to draft, independently review, and refine a Markdown implementation plan before coding."
