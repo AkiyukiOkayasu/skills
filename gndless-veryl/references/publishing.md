@@ -12,9 +12,10 @@ Veryl dependency、toolchain、公開 API の更新や publish を行う場合�
 
 ## Publish
 
-1. CHANGELOG.mdなどの未リリース情報を新バージョンで確定させてcommit
-2. Veryl.tomlのpublish設定に下記のbump_commit = trueとpublish_commit = trueが含まれているか確認する
-3. `veryl publish --bump patch` を実行。変更内容に従ってmajor/minor/patchを判断する。
+1. 新バージョンがmajor, minor, patchによるリリースなのかをCHANGELOG.mdやコミットログから判断し、人間に確認を取る
+2. CHANGELOG.mdなどの未リリース情報を新バージョンで確定させてcommit
+3. Veryl.tomlのpublish設定に下記のbump_commit = trueとpublish_commit = trueが含まれているか確認する
+4. `veryl publish --bump xxx` を実行。xxxはpatch, minor, majorのいずれか。
 
 ```toml
 [publish]
