@@ -52,7 +52,14 @@ delegate-agent/scripts/delegate-agent \
   --scope src
 ```
 
-The worker edits a sanitized project workspace under Seatbelt. The result points to `work.patch` and `changed_paths`; inspect both before applying anything to the parent repository.
+The worker edits a sanitized project workspace under Seatbelt. The result points to `work.patch` and `changed_paths`; apply it after the lightweight work gate passes:
+
+- runner status is success and the parent worktree is unchanged
+- `changed_paths` are inside the requested scope and match the approved Plan
+- `git apply --check <work.patch>` succeeds
+- requested format, build, or test checks pass
+
+Keep the check proportional for approved low-discretion work. Do not redo a full design review or reimplement the patch unless one of these gates fails, the patch is surprising, or it touches a sensitive contract.
 
 Use the same `work` mode for document updates or other mechanical edits when the target files and acceptance criteria are explicit. For a completed diff, use `commit-prep` to summarize scope, tests, and a commit message candidate; Codex performs the actual commit.
 
@@ -72,4 +79,4 @@ The result lists the executable, version, credential presence, catalog result, a
 
 ## Parent-agent handling
 
-Read the JSON result, then inspect the cited files in Codex. The result must identify mode, model, termination state, output, file changes, and Codex follow-up checks. Treat `final_text` as a report, not as a patch. Do not apply changes from the artifact automatically. For `commit-prep`, use the report to prepare a Codex-side commit; never ask the external agent to stage or commit until the explicit commit boundary exists.
+Read the JSON result, then inspect the cited files in Codex. The result must identify mode, model, termination state, output, file changes, and Codex follow-up checks. Treat `final_text` as a report, not as a patch. For `work`, the patch artifact is the source of changes and may be applied after the lightweight gate above passes. For `commit-prep`, use the report to prepare a Codex-side commit; never ask the external agent to stage or commit until the explicit commit boundary exists.

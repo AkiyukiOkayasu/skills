@@ -93,7 +93,7 @@ Sol/Codex側のレビューとは非対称にする。Sol/Codexはoff-by-one、�
 最後に変更ファイル、実装内容、実行テスト、未解決事項を報告してください。
 ```
 
-実装とcommitは分離する。Codexがdiff、対象外変更、Plan遵守、テストを確認してから、必要なら別途commit工程へ進む。文書化も、対象と既存形式が明確ならworkで扱える。
+実装とcommitは分離する。`work` は判断余地の少ない承認済み作業に限定するため、Codex側の確認は軽量ゲートに留める。runner成功、親worktree不変、変更pathがscopeとPlan内、patch適用確認、指定されたformat/build/testを確認できたら、全面的な再設計レビューを挟まず親リポジトリへ適用してよい。文書化も、対象と既存形式が明確ならworkで扱える。
 
 ## commit
 
@@ -155,10 +155,11 @@ Sol/Codex側のレビューとは非対称にする。Sol/Codexはoff-by-one、�
 
 ### work
 
-- `git diff`を確認する
-- 対象外の変更がないか確認する
-- 実装が決定済み方針に従っているか確認する
-- 必要なテストを再実行または確認する
+- runner成功、親worktree不変、`changed_paths` がscopeとPlan内であることを確認する
+- `git apply --check <work.patch>` でpatch適用可能性を確認する
+- patchの対象hunkが決定済み方針に沿うことだけを確認し、全面的な再実装レビューはしない
+- 指定されたformat、build、testを再実行または確認する
+- gate失敗、予想外の変更、公開API・ABI・RTL境界・release gateなどの sensitive contract 変更がある場合だけ、Codexで詳細レビューへ戻す
 
 ### commit
 

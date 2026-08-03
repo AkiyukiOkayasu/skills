@@ -41,7 +41,8 @@ Read [mode-prompts.md](references/mode-prompts.md) when constructing a mode-spec
 ## Safety rules
 
 - Keep `explore`, `review`, and `commit-prep` read-only. The delegated process receives only `read,grep,find,ls`.
-- `work` may use `edit`, `write`, and `bash`, but only inside the sanitized delegation workspace. On macOS the child process is wrapped with Seatbelt so file writes outside the workspace are denied. The result contains changed paths and a bounded patch artifact; Codex must inspect and apply any patch manually.
+- `work` may use `edit`, `write`, and `bash`, but only inside the sanitized delegation workspace. On macOS the child process is wrapped with Seatbelt so file writes outside the workspace are denied. The result contains changed paths and a bounded patch artifact; Codex applies it to the parent repository after the lightweight work gate passes.
+- For approved low-discretion `work`, keep Codex verification proportional: confirm runner success, parent worktree unchanged, changed paths within scope, patch applies cleanly, and requested checks pass. Do not redo a full design review or reimplement the change unless a gate fails or the patch touches a sensitive contract.
 - Do not pass `.env`, auth files, `.git`, `.pi`, `.opencode`, `.agents`, or symlinks resolving outside the repository. Provide any required context explicitly in the packet.
 - Treat dirty-worktree state as input, never as permission to overwrite it. The runner does not stash, reset, checkout, restore, stage, commit, amend, rebase, or push.
 - A timeout, non-zero exit, malformed JSONL, missing terminal event, forbidden tool, changed public copy, changed parent worktree, or truncated result is a failure.
