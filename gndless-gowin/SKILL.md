@@ -23,6 +23,15 @@ description: Use when working on Gowin-specific project automation and device ca
 - 人手 GUI 操作だけに閉じた手順を残さない
 - Gowin 固有の不安定要因や undocumented behavior は、再発防止のため skill に残す
 
+## コード委譲
+
+- Tcl、file list、生成RTL、project構成を横断する初期探索、承認済みPlanに沿う明確な自動化修正、手順書の整理、広い差分の巨視的レビューが必要な場合は、まず `$delegate-agent` を使う。
+- `$delegate-agent` では `explore` を横断探索、`review` を巨視的レビュー、`work` を判断余地の少ない小規模自動化修正、`commit-prep` をコミット候補整理に使う。
+- `$delegate-agent` の既定委譲モデルは高速・低コストな広域探索向けのものを想定する。デバッグ時のTcl / `gw_sh` / device errorの追跡、pin・reset・boot・timing optionの詳細設計、生成RTLとの対応、実機依存事項、最終レビューはGPT/Codexが担当する。
+- `review` は外部レビュー全般を意味せず、ここでは `$delegate-agent` による独立した巨視的レビューを指す。詳細な不具合確認はGPT/Codexで行う。
+- `explore` の結果は索引・仮説として扱い、重要なpath、file list、option、依存関係はCodexが元ファイルと実行結果で再確認する。
+- 委譲後はCodexで `gw_sh`、生成RTL、project設定、実機依存事項を再確認する。
+
 ## Gowin 固有の注意を残す基準
 
 - Gowin document に明記されていない

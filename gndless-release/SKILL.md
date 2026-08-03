@@ -23,6 +23,16 @@ description: Use when preparing a repository release, including version bump ver
 3. `git log --oneline 前回タグ..HEAD` でリリースログの元になる変更履歴を取得
 4. リリースノートの Unreleased セクションを更新し、日付とバージョンタグへ確定する
 
+## コード委譲
+
+- 前回タグからの広い変更の索引、release noteやdocumentの整理、リリース対象・commit候補の整理、巨視的な変更レビューが必要な場合は、まず `$delegate-agent` を使う。
+- `$delegate-agent` では `explore` を変更全体の把握、`review` を巨視的レビュー、`commit-prep` をコミット候補整理に使う。`work` は判断余地の少ないrelease note更新などに限る。
+- `$delegate-agent` の既定委譲モデルは高速・低コストな広域探索向けのものを想定する。version、artifact、互換性、build・test・size・timingなどのrelease gate、個別差分の細かなレビュー、最終的なリリース可否はGPT/Codexが担当する。
+- `review` は外部レビュー全般を意味せず、ここでは `$delegate-agent` による独立した巨視的レビューを指す。release gateや個別差分の確認はGPT/Codexで行う。
+- `explore` の結果は索引・仮説として扱い、変更の意味、影響範囲、release noteの根拠をCodexがgitと実ファイルで再確認する。
+- リリース対象とコミット候補の整理には `commit-prep` を使えるが、タグ付け、コミット、pushはCodexが検証後に実行する。
+- 委譲結果だけでリリース可否を決めず、必須のbuild、test、artifact検証を省略しない。
+
 ## タグ命名規則
 
 - 形式: `vX.Y.Z` （セマンティックバージョニング）

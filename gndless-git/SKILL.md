@@ -14,6 +14,28 @@ description: Use when creating branches, staging changes, writing commits, or pr
 - 変更を論理単位に分ける
 - コミットメッセージや履歴を整える
 
+## コード委譲
+
+- 広い差分の分類、変更履歴の索引、commit対象候補・メッセージ案の整理、関連文書の下書き、巨視的な独立レビューが必要な場合は `$delegate-agent` を使う。
+- `$delegate-agent` では `explore` を差分や履歴の把握、`review` を巨視的レビュー、`commit-prep` をコミット候補整理に使う。`work` は通常不要で、必要でも判断余地の少ない文書修正などに限る。
+- `$delegate-agent` の既定委譲モデルは高速・低コストな広域探索向けのものを想定する。staging範囲、既存変更との境界、履歴の意味、commit単位、prefix、最終diffとcommit内容の細かな確認はGPT/Codexが担当する。
+- `review` は外部レビュー全般を意味せず、ここでは `$delegate-agent` による独立した巨視的レビューを指す。staging境界や個別diffの確認はGPT/Codexで行う。
+- `explore` や `commit-prep` の結果は候補・索引として扱い、対象path、差分、テスト、コミット操作の最終判断はCodexが行う。
+- 大きな差分の整理、コミット対象の洗い出し、独立レビューが必要な場合だけ `$delegate-agent` を使う。小さい変更や単一ファイルの既知の変更では委譲しない。
+- コミット前の候補整理は `commit-prep`、広い差分の欠陥確認は `review`、対象範囲が不明な場合の把握は `explore` を使う。
+- `commit`は実装・Codex確認後の別工程として扱い、対象pathの明示、限定stage、push禁止を必須にする。現行runnerでは直接commitを有効化していないため、当面は`commit-prep`後にCodexがcommitする。
+- 小さい変更や単一ファイルの既知の変更では委譲しない。委譲先に既存変更の破棄、reset、rebase、amend、pushをさせない。
+
+例:
+
+```bash
+delegate-agent/scripts/delegate-agent \
+  --mode commit-prep \
+  --goal "現在の差分からコミット対象とメッセージ案を整理する" \
+  --acceptance "対象ファイル、テスト状況、コミットメッセージ案を根拠付きで報告する" \
+  --scope src
+```
+
 ## ブランチ名
 
 新規ブランチ名の方針:
