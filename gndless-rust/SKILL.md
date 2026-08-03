@@ -21,12 +21,10 @@ description: Use when editing Rust code in hardware or embedded repositories, in
 
 ## コード委譲
 
-- 大きなcrateや複数crateにまたがる構造把握、承認済みPlanに沿う明確なRust修正、定型的なdoc comment、commit候補の整理、広い差分の巨視的レビューが必要な場合は、まず `$delegate-agent` を使う。
-- `$delegate-agent` では `explore` を広域探索、`review` を巨視的レビュー、`work` を判断余地の少ない小規模実装、`commit-prep` をコミット候補整理に使う。
-- `$delegate-agent` の既定委譲モデルは高速・低コストな広域探索向けのものを想定する。詳細なcompiler error、trait・lifetime・ownership・genericの因果追跡、target・MMIO・interrupt・生成物境界の詳細設計、細かな実装レビュー、最終的なRust修正と検証はGPT/Codexが担当する。
-- `review` は外部レビュー全般を意味せず、ここでは `$delegate-agent` による独立した巨視的レビューを指す。局所的な欠陥確認はGPT/Codexで行う。
-- `explore` の結果は索引・仮説として扱い、crate境界、呼び出し関係、型、feature、target設定はCodexが元コードと`cargo`結果で再確認する。
-- `--scope` で対象crateや関連テストを絞り、委譲結果を確認した後、Codexが対象crateの `cargo` 検証と差分統合を行う。小さな既知の変更は直接処理する。
+- 大きなcrateや複数crateにまたがる構造把握、承認済みPlanに沿う明確なRust修正、定型的なdoc comment、コミット候補整理、広い差分の巨視的レビューでは、必要に応じて `$delegate-agent` を利用する。
+- モード説明、共通安全規則、出力の扱いは `$delegate-agent` に従う。
+- compiler error、trait・lifetime・ownership・genericの因果追跡、target・MMIO・interrupt・生成物境界の詳細設計、細かな実装レビュー、対象crateの `cargo` 検証、最終的なRust修正はCodexが担当する。
+- 小さい変更や単一ファイルの既知の変更では委譲しない。
 
 ## Documentation comments
 

@@ -16,12 +16,9 @@ Veryl RTL の編集、検証、documentation、生成 RTL、dependency、publish
 
 ## コード委譲
 
-- RTL hierarchy、module間接続、生成物の入口、関連testの横断探索、承認済みPlanに沿う明確な修正・文書化、広い差分の巨視的レビューが必要な場合は、まず `$delegate-agent` を使う。
-- `$delegate-agent` では `explore` を横断探索、`review` を巨視的レビュー、`work` を判断余地の少ない小規模修正、`commit-prep` をコミット候補整理に使う。
-- `$delegate-agent` の既定委譲モデルは高速・低コストな広域探索向けのものを想定する。diagnosticからsourceへの詳細追跡、width・signedness・CDC・reset・timing・inferenceの詳細設計、generated RTLとの照合、細かな実装レビュー、最終検証はGPT/Codexが担当する。
-- `review` は外部レビュー全般を意味せず、ここでは `$delegate-agent` による独立した巨視的レビューを指す。width、CDC、reset、timingなどの詳細確認はGPT/Codexで行う。
-- `explore` の結果は索引・仮説として扱い、module hierarchy、port契約、信号幅、生成元との対応はCodexがsource・map・生成RTLで再確認する。
-- 大きな `.veryl`／生成RTL差分の `review` 結果を採用する前に、`--scope` をsourceと必要なtestに限定し、Codexで `veryl fmt/check/test/build` を実行する。
+- RTL hierarchy、module間接続、生成物の入口、関連testの横断探索、承認済みPlanに沿う明確な修正・文書化、広い差分の巨視的レビューでは、必要に応じて `$delegate-agent` を利用する。
+- モード説明、共通安全規則、出力の扱いは `$delegate-agent` に従う。
+- diagnosticからsourceへの詳細追跡、width・signedness・CDC・reset・timing・primitive inferenceの詳細設計、generated RTLとの照合、source map追跡、細かな実装レビュー、`veryl fmt/check/test/build` による最終検証はCodexが担当する。
 
 ## Documentation comments
 
