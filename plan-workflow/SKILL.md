@@ -1,6 +1,6 @@
 ---
 name: plan-workflow
-description: Maintain repository plans as Markdown files under plan/ with checkbox-based item lists, independently review and refine non-trivial plans before implementation, track completion, and carry completed plan content into Git commit messages while removing completed items or fully completed plan files. Use when planning work, updating plan/*.md, checking task completion, reviewing an implementation plan, or committing changes associated with a plan.
+description: Maintain repository plans as Markdown files under plan/ with checkbox-based item lists, apply risk-proportional plan review before implementation, track completion, and carry completed plan content into Git commit messages while removing completed items or fully completed plan files. Use when planning work, updating plan/*.md, checking task completion, reviewing an implementation plan, or committing changes associated with a plan.
 ---
 
 # Plan Workflow
@@ -44,16 +44,37 @@ Keep incomplete items in the plan after a partial implementation. Update the pla
 
 ## Pre-implementation plan review
 
-Before implementing a non-trivial plan, run an independent plan-review loop with a subagent. Treat plans involving multiple components, migrations, externally visible behavior, or significant uncertainty as non-trivial. Do not start implementation while the plan has unresolved logical contradictions or blocking omissions.
+Use risk-proportional review. Do not route ordinary multi-file work through the highest-friction loop unless the change is genuinely high-risk.
 
-1. Write the complete draft plan to the relevant `plan/*.md` file, including scope, evidence-backed assumptions, ordered work items, validation, and completion conditions. For each work item, make clear its prerequisites, produced artifact or contract, state transition, and rollback or forward-only decision; verify that the dependency order has no missing or cyclic prerequisite.
-2. Delegate a reviewer subagent that did not author the plan. Supply the plan, an evidence list of inspected sources, and the relevant task-local context. Require a compatibility check against related contracts, active plans, dependencies, feature flags, and deployment or migration constraints. Ask it to identify contradictions, missing prerequisites, invalid ordering, unsafe assumptions, unhandled failure or rollback paths, interface or compatibility risks, and gaps in testing or acceptance criteria.
-3. Classify each finding as blocking, material, or optional, and record its disposition and evidence. Blocking findings include any unresolved contradiction, missing prerequisite, incompatible contract, unsafe data or state transition, or unmeasurable completion condition. Resolve every blocking finding. Resolve each material finding or record a specific evidence-based rationale for declining it; do not use a label or an assumption to hide a contradiction.
-4. Send the revised plan, the prior findings, and their dispositions to a different reviewer subagent where one is available. Require it to verify that every resolution is supported by evidence and has not introduced a contradiction. Repeat the review-and-revision cycle until the final reviewer confirms that all contradictions are closed and no blocking issue remains. Re-run this loop whenever assumptions, interfaces, ordering, validation, or completion conditions materially change, including during phased implementation.
-5. If a review reveals an unknown product, compatibility, or architectural choice that needs user preference, stop before implementation and ask the user. Record only evidence-backed implementation assumptions as assumptions; never substitute one for a user decision.
-6. Begin implementation only after the final plan is internally consistent, has an executable dependency order, and provides measurable validation and completion conditions. Summarize the review outcome before moving on.
+### 軽微
 
-Keep review prompts evidence-based and challenge-oriented; do not ask the reviewer merely to approve the plan. For trivial, isolated edits, use normal self-review instead and state why a subagent review is unnecessary. If no subagent can be started, do not implement migrations, multi-component changes, or externally visible behavior without explicit user authorization; for lower-risk plans, perform the same checklist yourself and disclose that the independent review was unavailable.
+Use Codex self-review only when the plan is isolated, reversible, and has low uncertainty, such as a small doc update, narrow test addition, or a single obvious code change.
+
+- Write or update only the needed checklist items.
+- Confirm the plan has a clear completion condition and no obvious ordering issue.
+- State briefly that independent review is unnecessary because the change is lightweight.
+
+### 通常
+
+Use one independent review for normal substantive work, such as a medium-sized feature, multiple related files, non-public refactors, or a plan with some dependency ordering to validate.
+
+1. Write the draft plan to the relevant `plan/*.md` file, including scope, evidence-backed assumptions, ordered work items, validation, and completion conditions.
+2. Ask one reviewer to challenge assumptions, direction, dependency order, missing prerequisites, compatibility risks, and validation gaps. When using `$delegate-agent` or DeepSeek for this review, aim it at premises, direction, and ordering; do not treat it as the sole blocker-clearing authority.
+3. Codex classifies findings as blocking, material, or optional. Resolve every blocking finding; resolve material findings or record a specific evidence-based rationale for declining them.
+4. Codex/Sol performs the concrete plan-quality pass: specificity, executable steps, missing files or tests, measurable completion conditions, and fit with local repo conventions.
+5. Begin implementation after the blocking issues are closed and the remaining tradeoffs are explicit.
+
+### 高リスク
+
+Use the stricter loop for migrations, public API or compatibility changes, data/state transitions, security-sensitive work, release gates, multi-component rollouts, irreversible decisions, or plans with significant unresolved architecture risk.
+
+1. Complete the normal review flow first.
+2. Send the revised plan, prior findings, and dispositions to a different reviewer where one is available. Require it to verify that resolutions are evidence-backed and have not introduced contradictions.
+3. Repeat review and revision until no blocking issue remains.
+4. Re-run the high-risk loop whenever assumptions, interfaces, ordering, validation, or completion conditions materially change during phased implementation.
+5. If review reveals an unknown product, compatibility, or architectural choice that needs user preference, stop before implementation and ask the user.
+
+Keep review prompts evidence-based and challenge-oriented; do not ask the reviewer merely to approve the plan. If no independent reviewer can be started, proceed with Codex self-review for 軽微 plans, disclose the limitation for 通常 plans, and do not implement 高リスク plans without explicit user authorization.
 
 ## Reviewer model selection
 
@@ -61,11 +82,12 @@ Choose the reviewer model and reasoning effort when starting each subagent. Do n
 
 Use the following policy:
 
-1. For a normal non-trivial plan, prefer a currently available strong, balanced model at medium reasoning effort. This is the default trade-off for substantive logical review.
-2. For an irreversible migration, security-sensitive change, public compatibility change, multi-system rollout, or plan with unresolved architectural risk, still start with a strong, balanced model at medium reasoning effort. Do not automatically escalate to the flagship model or high/extra-high reasoning; the final reviewer must be at least as capable as the plan author.
-3. Reserve fast or economy-oriented models for trivial checklist passes, not as the only blocker-clearing reviewer for a non-trivial plan.
-4. Prefer a different reviewer agent for the final pass. For high-risk plans, also prefer a different model tier or family when the current launcher offers one; otherwise use a fresh agent with an independent prompt and context.
-5. When representative review evaluations or prior outcome data exist, choose the lowest-cost, lowest-latency option that meets the required review quality. Without evidence, use the balanced Medium default rather than assuming the flagship model or higher reasoning effort is worthwhile.
+1. For 軽微 plans, do not start a reviewer by default.
+2. For 通常 plans, prefer one currently available strong, balanced model at medium reasoning effort.
+3. For 高リスク plans, start with a strong, balanced model at medium reasoning effort. Do not automatically escalate to the flagship model or high/extra-high reasoning; the final reviewer must be at least as capable as the plan author.
+4. Reserve fast or economy-oriented models for lightweight checklist passes, premise/order review through `$delegate-agent`, or additional non-blocking feedback. Do not use them as the only blocker-clearing reviewer for 高リスク plans.
+5. Prefer a different reviewer agent for the final pass. For 高リスク plans, also prefer a different model tier or family when the current launcher offers one; otherwise use a fresh agent with an independent prompt and context.
+6. When representative review evaluations or prior outcome data exist, choose the lowest-cost, lowest-latency option that meets the required review quality. Without evidence, use the balanced Medium default rather than assuming the flagship model or higher reasoning effort is worthwhile.
 
 State the chosen reviewer profile and why it fits the plan's risk. If Medium cannot resolve a finding, do not silently increase cost or latency; disclose the limitation and request user direction.
 
