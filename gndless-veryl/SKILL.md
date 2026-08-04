@@ -40,6 +40,7 @@ veryl build
 - 小さな unit test と native test を優先し、長い test は必要時だけ `veryl test --ignored`
 - backend 差の確認は `veryl test --backend-validate`、`--wave` は失敗再現・波形解析時だけ使用
 - system-level の性質だけ project 側の外部 simulation workflow を併用
+- `Veryl.toml` の `version` は手動で編集しない。バージョン更新は `veryl publish --bump` に委ねる
 - migration、dependency update、publish は [references/publishing.md](references/publishing.md) を読む
 
 ## Naming and types
