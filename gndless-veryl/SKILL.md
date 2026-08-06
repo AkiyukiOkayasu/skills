@@ -49,7 +49,7 @@ veryl build
 - port は方向 prefix/suffix ではなく意味名を使い、clock は `clk`、system reset は `rst`
 - public port、module 契約、register/accumulator の width、signedness が重要な境界では型を明示
 - FSM は enum、関連する pipeline/bus signal は struct を検討し、public transaction と internal transaction は分離
-- cast、width 変更、signed/unsigned 変換を扱う場合は [references/casting.md](references/casting.md) を読む
+- width 変更は `$std::zero_extend` / `$std::one_extend` / `$std::sign_extend` / `$std::truncate` を優先し、cast、width 変更、signed/unsigned 変換を扱う場合は [references/casting.md](references/casting.md) を読む
 - generic、Boolean type、packed/unpacked、system function/task を扱う場合は [references/language-notes.md](references/language-notes.md) を読む
 
 ## RTL design
