@@ -29,6 +29,35 @@ description: Use when working on Gowin-specific project automation and device ca
 - モード説明、共通安全規則、出力の扱いは `$delegate-agent` に従う。
 - Tcl / `gw_sh` / device errorの追跡、pin・reset・boot・timing optionの詳細設計、生成RTLとの対応、実機依存事項、project設定、最終レビューはCodexが担当する。
 
+## Gowin 合成の既知制約: interface 配列の procedural for
+
+Gowin Synthesis は、`always_ff` / `always_comb` 内の `for` ループで **interface (modport) 配列要素を変数インデックス選択できない**。
+
+- エラー例: `ERROR (EX3812) : 'i' is not a constant` (Veryl の interface が生成する SV の配列要素アクセスが定数展開されない)
+- 定数インデックス (`channels[0].raw` など) は procedural 内でも合成できる。問題になるのは変数 `i` を使うループだけ
+- この制約は Veryl の `veryl check` / `veryl test` では検出されず、Gowin 合成でのみ失敗する
+
+**回避パターン** (Veryl):
+
+- 入力 interface は generate assign で raw の plain 配列へ展開し、procedural 内は plain 配列を扱う
+
+```veryl
+var i_channels_raw: gndless_fixedpoint::Q1_23::Raw [8];
+for i in 0..8 :g_ich {
+    assign i_channels_raw[i] = i_channels[i].raw;
+}
+```
+
+- 出力 interface も同様に、内部 plain 配列から generate assign で接続する
+
+```veryl
+for i in 0..8 :g_out {
+    assign o_channels[i].raw = o_channels_raw[i];
+}
+```
+
+- testbench (合成対象外) の `.raw` アクセスには適用不要
+
 ## Gowin 固有の注意を残す基準
 
 - Gowin document に明記されていない
