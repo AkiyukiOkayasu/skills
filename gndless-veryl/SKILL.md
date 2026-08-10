@@ -70,3 +70,7 @@ veryl build
 - 下流 EDA の行番号は source map で Veryl へ戻し、toolchain 更新時は生成 RTL、filelist、module hierarchy の diff を確認
 - `veryl synth` は設計探索の概算として扱い、vendor synthesis、place-and-route、timing sign-off の代替にしない
 - FPGA では vendor primitive を wrapper へ隔離し、合成後に BRAM、DSP、carry、LUT などの inference report を確認
+
+## Anti-patterns
+
+- Veryl.pubを手動編集する
