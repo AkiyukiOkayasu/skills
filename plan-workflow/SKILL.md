@@ -48,7 +48,7 @@ Use risk-proportional review. Do not route ordinary multi-file work through the 
 
 ### 軽微
 
-Use Codex self-review only when the plan is isolated, reversible, and has low uncertainty, such as a small doc update, narrow test addition, or a single obvious code change.
+Use self-review only when the plan is isolated, reversible, and has low uncertainty, such as a small doc update, narrow test addition, or a single obvious code change.
 
 - Write or update only the needed checklist items.
 - Confirm the plan has a clear completion condition and no obvious ordering issue.
@@ -59,9 +59,9 @@ Use Codex self-review only when the plan is isolated, reversible, and has low un
 Use one independent review for normal substantive work, such as a medium-sized feature, multiple related files, non-public refactors, or a plan with some dependency ordering to validate.
 
 1. Write the draft plan to the relevant `plan/*.md` file, including scope, evidence-backed assumptions, ordered work items, validation, and completion conditions.
-2. Ask one reviewer to challenge assumptions, direction, dependency order, missing prerequisites, compatibility risks, and validation gaps. When using `$delegate-agent` or DeepSeek for this review, aim it at premises, direction, and ordering; do not treat it as the sole blocker-clearing authority.
-3. Codex classifies findings as blocking, material, or optional. Resolve every blocking finding; resolve material findings or record a specific evidence-based rationale for declining them.
-4. Codex/Sol performs the concrete plan-quality pass: specificity, executable steps, missing files or tests, measurable completion conditions, and fit with local repo conventions.
+2. Ask one reviewer to challenge assumptions, direction, dependency order, missing prerequisites, compatibility risks, and validation gaps. When using `codex-reviewer` or DeepSeek for this review, aim it at premises, direction, and ordering; do not treat it as the sole blocker-clearing authority.
+3. opencode classifies findings as blocking, material, or optional. Resolve every blocking finding; resolve material findings or record a specific evidence-based rationale for declining them.
+4. opencode performs the concrete plan-quality pass: specificity, executable steps, missing files or tests, measurable completion conditions, and fit with local repo conventions.
 5. Begin implementation after the blocking issues are closed and the remaining tradeoffs are explicit.
 
 ### 高リスク
@@ -74,7 +74,7 @@ Use the stricter loop for migrations, public API or compatibility changes, data/
 4. Re-run the high-risk loop whenever assumptions, interfaces, ordering, validation, or completion conditions materially change during phased implementation.
 5. If review reveals an unknown product, compatibility, or architectural choice that needs user preference, stop before implementation and ask the user.
 
-Keep review prompts evidence-based and challenge-oriented; do not ask the reviewer merely to approve the plan. If no independent reviewer can be started, proceed with Codex self-review for 軽微 plans, disclose the limitation for 通常 plans, and do not implement 高リスク plans without explicit user authorization.
+Keep review prompts evidence-based and challenge-oriented; do not ask the reviewer merely to approve the plan. If no independent reviewer can be started, proceed with self-review for 軽微 plans, disclose the limitation for 通常 plans, and do not implement 高リスク plans without explicit user authorization.
 
 ## Reviewer model selection
 
@@ -85,7 +85,7 @@ Use the following policy:
 1. For 軽微 plans, do not start a reviewer by default.
 2. For 通常 plans, prefer one currently available strong, balanced model at medium reasoning effort.
 3. For 高リスク plans, start with a strong, balanced model at medium reasoning effort. Do not automatically escalate to the flagship model or high/extra-high reasoning; the final reviewer must be at least as capable as the plan author.
-4. Reserve fast or economy-oriented models for lightweight checklist passes, premise/order review through `$delegate-agent`, or additional non-blocking feedback. Do not use them as the only blocker-clearing reviewer for 高リスク plans.
+4. Reserve fast or economy-oriented models for lightweight checklist passes, premise/order review through `codex-reviewer`, or additional non-blocking feedback. Do not use them as the only blocker-clearing reviewer for 高リスク plans.
 5. Prefer a different reviewer agent for the final pass. For 高リスク plans, also prefer a different model tier or family when the current launcher offers one; otherwise use a fresh agent with an independent prompt and context.
 6. When representative review evaluations or prior outcome data exist, choose the lowest-cost, lowest-latency option that meets the required review quality. Without evidence, use the balanced Medium default rather than assuming the flagship model or higher reasoning effort is worthwhile.
 

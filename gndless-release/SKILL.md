@@ -23,12 +23,11 @@ description: Use when preparing a repository release, including version bump ver
 3. `git log --oneline 前回タグ..HEAD` でリリースログの元になる変更履歴を取得
 4. リリースノートの Unreleased セクションを更新し、日付とバージョンタグへ確定する
 
-## コード委譲
+## 独立レビュー
 
-- 前回タグからの広い変更の索引、release noteやdocumentの整理、リリース対象・コミット候補整理、巨視的な変更レビューでは、必要に応じて `$delegate-agent` を利用する。
-- モード説明、共通安全規則、出力の扱いは `$delegate-agent` に従う。
-- version、artifact、互換性、build・test・size・timingなどのrelease gate、個別差分の細かなレビュー、最終的なリリース可否、タグ付け、コミット、pushはCodexが検証後に判断・実行する。
-- 委譲結果だけでリリース可否を決めず、必須のbuild、test、artifact検証を省略しない。
+- 前回タグからの広い変更の索引、release noteやdocumentの整理、リリース対象・コミット候補整理、巨視的な変更レビューでは、必要に応じて `codex-reviewer` subagentを利用する（読み取り専用、変更はしない）。
+- version、artifact、互換性、build・test・size・timingなどのrelease gate、個別差分の細かなレビュー、最終的なリリース可否、タグ付け、コミット、pushはopencodeが検証後に判断・実行する。
+- レビュー結果だけでリリース可否を決めず、必須のbuild、test、artifact検証を省略しない。
 
 ## タグ命名規則
 

@@ -19,12 +19,12 @@ description: Use when editing Rust code in hardware or embedded repositories, in
 - 組み込み firmware では、静的検証と最終バイナリ検証を分けて考える
 - 生成物や他言語との境界がある変更は、契約先もセットで確認する
 
-## コード委譲
+## 独立レビュー
 
-- 大きなcrateや複数crateにまたがる構造把握、承認済みPlanに沿う明確なRust修正、定型的なdoc comment、コミット候補整理、広い差分の巨視的レビューでは、必要に応じて `$delegate-agent` を利用する。
-- モード説明、共通安全規則、出力の扱いは `$delegate-agent` に従う。
-- compiler error、trait・lifetime・ownership・genericの因果追跡、target・MMIO・interrupt・生成物境界の詳細設計、細かな実装レビュー、対象crateの `cargo` 検証、最終的なRust修正はCodexが担当する。
-- 小さい変更や単一ファイルの既知の変更では委譲しない。
+- 広い差分の巨視的レビューでは、必要に応じて `codex-reviewer` subagentを利用する（読み取り専用、変更はしない）。
+- 大きなcrateや複数crateにまたがる構造把握、承認済みPlanに沿う明確なRust修正、定型的なdoc comment、コミット候補整理はopencode自身で実施する。
+- compiler error、trait・lifetime・ownership・genericの因果追跡、target・MMIO・interrupt・生成物境界の詳細設計、細かな実装レビュー、対象crateの `cargo` 検証、最終的なRust修正はopencodeが担当する。
+- 小さい変更や単一ファイルの既知の変更ではレビューを省略できる。
 
 ## Documentation comments
 

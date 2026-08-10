@@ -14,22 +14,11 @@ description: Use when creating branches, staging changes, writing commits, or pr
 - 変更を論理単位に分ける
 - コミットメッセージや履歴を整える
 
-## コード委譲
+## 独立レビュー
 
-- 広い差分の分類、変更履歴の索引、コミット候補整理、関連文書の下書き、巨視的な独立レビューでは、必要に応じて `$delegate-agent` を利用する。
-- モード説明、共通安全規則、出力の扱いは `$delegate-agent` に従う。
-- staging範囲、既存変更との境界、履歴の意味、commit単位、prefix、最終diff確認、実際のstage/commitはCodexが担当する。
-- 小さい変更や単一ファイルの既知の変更では委譲しない。
-
-例:
-
-```bash
-delegate-agent/scripts/delegate-agent \
-  --mode commit-prep \
-  --goal "現在の差分からコミット対象とメッセージ案を整理する" \
-  --acceptance "対象ファイル、テスト状況、コミットメッセージ案を根拠付きで報告する" \
-  --scope src
-```
+- 広い差分の分類、変更履歴の索引、コミット候補整理、関連文書の下書き、巨視的な独立レビューでは、必要に応じて `codex-reviewer` subagentを利用する（読み取り専用、変更はしない）。
+- staging範囲、既存変更との境界、履歴の意味、commit単位、prefix、最終diff確認、実際のstage/commitはopencodeが担当する。
+- 小さい変更や単一ファイルの既知の変更ではレビューを省略できる。
 
 ## ブランチ名
 

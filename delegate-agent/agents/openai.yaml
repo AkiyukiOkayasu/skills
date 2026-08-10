@@ -1,4 +1,0 @@
-interface:
-  display_name: "Delegate Agent"
-  short_description: "Safely delegate bounded agent work"
-  default_prompt: "Use $delegate-agent to delegate a bounded repository exploration or review safely."

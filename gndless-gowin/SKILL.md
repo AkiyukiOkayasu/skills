@@ -23,11 +23,10 @@ description: Use when working on Gowin-specific project automation and device ca
 - 人手 GUI 操作だけに閉じた手順を残さない
 - Gowin 固有の不安定要因や undocumented behavior は、再発防止のため skill に残す
 
-## コード委譲
+## 独立レビュー
 
-- Tcl、file list、生成RTL、project構成を横断する初期探索、承認済みPlanに沿う明確な自動化修正、手順書の整理、広い差分の巨視的レビューでは、必要に応じて `$delegate-agent` を利用する。
-- モード説明、共通安全規則、出力の扱いは `$delegate-agent` に従う。
-- Tcl / `gw_sh` / device errorの追跡、pin・reset・boot・timing optionの詳細設計、生成RTLとの対応、実機依存事項、project設定、最終レビューはCodexが担当する。
+- Tcl、file list、生成RTL、project構成を横断する初期探索、承認済みPlanに沿う明確な自動化修正、手順書の整理、広い差分の巨視的レビューでは、必要に応じて `codex-reviewer` subagentを利用する（読み取り専用、変更はしない）。
+- Tcl / `gw_sh` / device errorの追跡、pin・reset・boot・timing optionの詳細設計、生成RTLとの対応、実機依存事項、project設定、最終レビューはopencodeが担当する。
 
 ## Gowin 合成の既知制約: interface 配列の procedural for
 

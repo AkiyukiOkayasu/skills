@@ -14,11 +14,11 @@ Veryl RTL の編集、検証、documentation、生成 RTL、dependency、publish
 - 構文だけでなく、生成回路の wire/register、bit width、signedness、logic depth、RAM/FF inference、reset cost、clock domain を確認
 - board、register map、Fmax、vendor flow など project 固有事項は project 側の skill を優先
 
-## コード委譲
+## 独立レビュー
 
-- RTL hierarchy、module間接続、生成物の入口、関連testの横断探索、承認済みPlanに沿う明確な修正・文書化、広い差分の巨視的レビューでは、必要に応じて `$delegate-agent` を利用する。
-- モード説明、共通安全規則、出力の扱いは `$delegate-agent` に従う。
-- diagnosticからsourceへの詳細追跡、width・signedness・CDC・reset・timing・primitive inferenceの詳細設計、generated RTLとの照合、source map追跡、細かな実装レビュー、`veryl fmt/check/test/build` による最終検証はCodexが担当する。
+- 広い差分の巨視的レビューでは、必要に応じて `codex-reviewer` subagentを利用する（読み取り専用、変更はしない）。
+- RTL hierarchy、module間接続、生成物の入口、関連testの横断探索、承認済みPlanに沿う明確な修正・文書化はopencode自身で実施する。
+- diagnosticからsourceへの詳細追跡、width・signedness・CDC・reset・timing・primitive inferenceの詳細設計、generated RTLとの照合、source map追跡、細かな実装レビュー、`veryl fmt/check/test/build` による最終検証はopencodeが担当する。
 
 ## Documentation comments
 
