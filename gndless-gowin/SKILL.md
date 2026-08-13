@@ -57,6 +57,20 @@ for i in 0..8 :g_out {
 
 - testbench (合成対象外) の `.raw` アクセスには適用不要
 
+## PnR 配置・ルーティングオプション (`-place_option` / `-route_option`)
+
+タイミングマージンが足りないとき、合成オプション (`-retiming` / `-pipe` / `-route_maxfan`) で
+改善しない場合は、**PnR の配置・ルーティングアルゴリズム選択**を試す。
+
+- `-place_option 2`: timing 優先の配置。単独で改善することが多い
+- `-place_option 3` / `4`: 複数試行から最良を選択 (詳細は未公開)。**3 + `-route_option 1` の
+  組み合わせが実測で最も良い** (FPGA_Oscillator で Fmax 50.4 → 62.6 MHz)
+- `-route_option 1`: timing に従うルーティング
+
+**注意 (cmd.do の永続化)**: PnR 設定は `impl/pnr/cmd.do` に保存され、オプション変更が
+反映されないことがある。`set_option` を変更したら **`impl/pnr/cmd.do` を削除して再実行**する。
+詳細は [references/pnr-placement-options.md](references/pnr-placement-options.md)。
+
 ## Gowin 固有の注意を残す基準
 
 - Gowin document に明記されていない
@@ -88,7 +102,12 @@ run close
 
 出力された `project_config.tcl` と現在の `run_gowin.tcl` を比較し、不足している `set_option` を洗い出す。
 
-**注意**: `-retiming` と `-pipe` は `set_option` で設定できるが、`saveto -all_options` の出力に含まれないことがある。必要なら明示的に `set_option` として記述する。
+**注意**: `-retiming` / `-pipe` は **headless gw_sh フローでは no-op** (V1.9.12 で検証)。
+GUI の設定定義 (synthesisoptions.xml の SYN13 Retiming / SYN12 Pipelining、retiming デフォルト 1) には
+存在するが、`set_option` で設定しても合成ネットリストは変化しない (タイムスタンプヘッダを除いた
+hash 比較で確認。3組み合わせすべて同一)。公式 Tcl ガイド (SUG1220) にも `saveto -all_options` にも
+gprj にも現れない。**tcl から削除してよい** (`-route_maxfan` は PnR の `cmd.do` に現れる実オプション
+なので残すこと)。
 
 ## 新しい Gowin project を立ち上げる手順
 
