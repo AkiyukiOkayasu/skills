@@ -1,90 +1,99 @@
 ---
 name: gndless-ngspice
-description: Use when simulating analog circuits with standalone ngspice (not KiCad's embedded simulator), including batch decks, control blocks, parameter/pot sweeps, THD and harmonic analysis, rawfile/WAV export, and diagnosing simulation results that look wrong.
+description: Use when running standalone ngspice (not KiCad's embedded simulator) from the CLI, including batch decks, .control blocks, .op/.tran/.ac analysis, parameter sweeps, .meas measurements, Fourier/THD checks, rawfile and 32-bit float WAV export, and diagnosing failed or suspicious runs.
 ---
 
 # Gndless ngspice
 
-単体 ngspice でアナログ回路（差動対、フィルタ、VCA など）を検証するときの
-作業方針と、実際に踏んだ落とし穴。
+単体ngspice（CLI）を AI エージェントが操作するための前提と注意点。アナログ回路のバッチ解析、raw/WAV/表の出力、結果がおかしいときの切り分け方。
 
-## 使う場面
+## Prerequisites
 
-- ngspice で動作点・過渡・周波数特性・THD を確認する
-- 部品値やポット位置をスイープして表・グラフ・WAV にする
-- シミュレーション結果が理論値や直感と合わないとき
+- **単体 CLI 専用**。KiCad 内蔵シミュレータは共有ライブラリ + GUI の別物で、`-b` / `-r` / `-o` や `.control` のファイル出力系はそのままでは使えない。
+- このスキルは ngspice 47 を前提とする。オプション名や既定値はバージョン差があるため、最初に `ngspice --version` を確認する。
+- インストール（macOS）は `brew install ngspice ffmpeg`。WAV 変換に ffmpeg を使う。
+- デッキは手書きせず、ケースごとにスクリプトで生成して `.param` を埋める。ngspice に `.step` は無い。
+- 既定温度は TEMP=27°C。再現性が要る比較では `.temp` または `.options temp=` を明示する。
+- `.include` の相対パスはデッキのあるディレクトリ基準。生成スクリプトと出力先を揃える。
 
-## 基本フロー
+## Use cases
 
-- デッキはスクリプトでケースごとに生成し、`.param` を埋めて
-  `ngspice -b -o log deck.cir` で回す（ngspice に `.step` は無い）
-- 出力は `.control` ブロックの `wrdata`（gnuplot 向き）または `write`（raw）
-- 解析は Python 側で行い、理論値で DFT を検算してから結論を出す
-- 動作点（`.op`）→ 過渡（`.tran`）の順で確認する
+- 動作点・過渡・周波数特性を確認する。
+- 部品値やパラメータをスイープして表・グラフ・WAV にする。
+- シミュレーション結果が理論値や期待と合わないとき。
 
-## デッキの落とし穴
+## Commands
 
-- **1 行目はタイトルとして消費される**。`.param` を 1 行目に書くと無効
-- **接尾辞**: `M` はミリ、`Meg` はメガ。`2M` は 2 mΩ。大抵抗は必ず `Meg`
-  （`2e+06` のような指数表記が誤解析された事例もあり `Meg` が安全）
-- B-source の式で `.param` を参照するときは `{PARAM}`。`{...}` 内は
-  三項演算子 `?:` が使える
-- **直列ソース抵抗**: `Bsrc src 0 V=...` + `Rsrc src tri 1k` の形にする。
-  `Bsrc tri 0` のまま `Rsrc tri_s tri 1k` のように浮いたノードへ繋ぐと
-  ソース抵抗が効かない（最適点がずれる典型ミス）
-- `.control` 内では `wrdata` を `run` 直後に置く。`op` の後だとカレント
-  プロットが変わり time 列が消える
-- 等間隔サンプルが欲しいときは `linearize`。**WAV のサンプルレートは
-  `.tran` の tstep で決まる**（例: 96 kHz → `10.4167u`、48 kHz → `20.8333u`）
-- 収束不良: `.options reltol=... gmin=...`、`method=gear`、
-  `.ic`、怪しいノードに 1 GΩ を追加
+| Purpose | Command |
+|---|---|
+| Batch + log | `ngspice -b -o log.txt deck.cir` |
+| Binary raw output | `ngspice -b -r out.raw deck.cir` |
+| Interactive (debug) | `ngspice deck.cir` |
 
-## 出力
+`-b` の stdout はノイズが多い。`-o log.txt` を付けて `.meas` や `fourier` の結果をログから読む。解析前にログの `Error` / `Warning` を確認する。
 
-- rawfile: `ngspice -b -r out.raw deck.cir`（バイナリ SPICE3 形式）、
-  または control 内で `write out.raw v(x)`。ASCII は `set filetype=ascii`
-- **LTspice の .raw / .wave とは非互換**。ngspice に WAV 出力は無いので
-  `linearize` → `wrdata`/`write` → Python `wave` モジュールや sox で変換する
-- `wrdata` は `set wr_vecnames` `set wr_singlescale` を付けると
-  1 スケール + 複数列になり gnuplot で扱いやすい
-- レベルを揃えるかは明示する。固定スケール（例: ±2.5 V → 0.9 FS）なら
-  ファイル間の相対レベルが保たれる
+## Basic flow
 
-## データ精度（どの段が律速か）
+1. デッキを生成して `ngspice -b -o log.txt deck.cir` を実行する。
+2. 動作点 `.op` → 過渡 `.tran` → 周波数特性 `.ac` の順で確認する。
+3. 出力は `.control` の `wrdata`（gnuplot 向き）または `write`（raw）を使う。
+4. 数値は理論値と突き合わせてから結論を出す。FFT やスイープ集計は Python 側で行う。
 
-- ngspice の内部演算は **double**（IEEE754 binary64、仮数 53 bit）
-- バイナリ rawfile（`-r` / `write`）は **1 値 8 バイトの double**
-  （実測: `databytes / (nvars * npoints) = 8.0`）
-- `wrdata` のテキストは `set numdgt=N` で桁数制御。既定は 9 桁程度
-  （相対精度 ~30 bit 相当）なので **`set numdgt=15` を入れる**
-- WAV のビット深度: 24-bit PCM は仮数 24 bit（相対 ~7.2 桁）。
-  32-bit float も仮数 24 bit でフルスケール時は 24-bit PCM と同等。
-  double 相当が欲しいなら 64-bit float WAV（`-e floating-point -b 64`）
-- 音声用途は 24-bit で十分。数値解析の厳密比較は rawfile（double）を使う
+## Deck gotchas
 
-## 解析の落とし穴
+- **1 行目はタイトルとして消費される**。`.param` や素子を書くと無効になる。
+- **接尾辞**: `M` はミリ、`Meg` はメガ。`2M` は 2 mΩ。大抵抗は必ず `Meg` を使う（`2e+06` の誤解析事例あり）。
+- SIN 源は `SIN(VO VA FREQ TD THETA PHASE)`。B-source で `.param` を参照するときは `{PARAM}` と書き、`{...}` 内では三項演算子 `?:` が使える。
+- **直列ソース抵抗**: `Bsrc src 0 V=...` + `Rsrc src tri 1k` の形にする。`Bsrc tri 0` のまま抵抗を浮いたノード（`tri_s`）へ繋ぐと抵抗が効かない。
+- **`.meas` は `FROM=` / `TO=` と等号必須**。`FROM 2m TO 4m` は構文エラーになる（LTspice と非互換）。
+- `.control` 内では `wrdata` を `run` 直後に置く。`op` など別解析の後だとカレントプロットが変わり time 列が消える。
+- 等間隔サンプルが欲しいときは `linearize` を使う。**出力サンプルレートは `.tran` の tstep で決まる**ので、`{1/fs}` と書けば正確になる（例: `.tran {1/96000} 5m`）。
+- 収束不良には `.options reltol=... gmin=...`、`method=gear`、`.ic`、怪しいノードへの 1 GΩ 追加を試す。
 
-- 高調波 DFT は整数周期の窓で計算する。離散和での基本波係数は
-  `Σv·sin / Σsin²`。連続積分の `2/T` をそのまま使うと 2 倍になる
-- THD は「正弦波からのずれ」。三角波は素通しでも ≈12%（H3≈11.1%）出る
-- 奇関数（対称差動対）は偶数次を出さない。非対称は DC バイアス、
-  レベルはテール電流で作る
-- コレクタ電源電圧を変えると **Early 効果で H3 打ち消し点（サイン点）が動く**。
-  「サイン点」は tanh 圧縮と Early 効果の兼ね合いで決まる
-- ソースインピーダンス、ベースの rπ、ポットの負荷を見落とすと最適点がずれる
-- 結果が変なら、まずモデル・接尾辞・ソース抵抗を疑う
+## AC analysis
 
-## 波形（WAV）レシピ
+```spice
+.ac dec 100 10 1Meg          ; decade 100 点、10 Hz〜1 MHz
 
-ngspice は WAV を直接書けない。**バイナリ raw（float64）を書き、
-ffmpeg で 32-bit float WAV に変換**するのが最も単純。使用ツールは
-ngspice と ffmpeg の 2 つだけ（変換は ffmpeg、Python/awk/sox 不要）。
+.control
+run
+set wr_singlescale
+set numdgt=15
+wrdata ac.dat vdb(out) vp(out)
+.endc
+```
+
+- 複素ベクトルをそのまま `wrdata` すると実部・虚部が並ぶ。dB と位相は `vdb()` / `vp()` を明示する。
+- `plot vdb(out)` は対話時のみ。バッチでは `wrdata` か `write` を使う。
+
+## Analysis gotchas
+
+- 高調波 DFT は整数周期の窓で計算する。離散和での基本波係数は `Σv·sin / Σsin²` であり、連続積分の `2/T` をそのまま使うと 2 倍になる。
+- **`fourier` / `.four` は最後の 1 周期だけを使う**。`tstop` を信号周期の整数倍にしないと THD を信用できない。`fourier 1k v(out)` で THD が直接出る。
+- スイープは 1 ケースずつ実行し、各ケースのログに収束エラーが無いか確認する。
+
+## Output precision
+
+| Path | Precision | Use |
+|---|---|---|
+| Internal | double (binary64, 53-bit significand) | Always |
+| Binary raw (`-r` / `write`) | 8 byte per value (double) | Exact numeric comparison |
+| `wrdata` text | `set numdgt=N`, default 9 digits | gnuplot. **Set `numdgt=15`** |
+| WAV | 32-bit float (24-bit significand) | Audio output |
+
+- raw を ASCII にするときは `write` の前に `set filetype=ascii` を置く。
+- **LTspice の .raw / .wave とは非互換**。
+- `wrdata` は `set wr_vecnames` でヘッダ行、`set wr_singlescale` で複数ベクトルでも 1 スケール + 複数列になる（付けないとベクトルごとにスケール列が繰り返される）。
+
+## WAV export
+
+ngspice は WAV を直接書けない。**バイナリ raw（float64）を書き、ffmpeg で 32-bit float WAV に変換**する。
 
 ```spice
 .control
 run
-linearize v(outj)
-write out.raw v(outj)           ; 指定ベクトルだけの raw（time + 信号）
+linearize v(out)
+write out.raw v(out)            ; time + 指定ベクトル
 .endc
 ```
 
@@ -95,10 +104,15 @@ tail -c +$((OFF+9)) out.raw | ffmpeg -y -f f64le -ar 96000 -ac 2 -i - \
   -af "pan=mono|c0=c1,volume=1.0" -c:a pcm_f32le out.wav
 ```
 
-- `write out.raw v(x)` は time + 指定ベクトルだけの raw を書く（2ch）
-- **ngspice 側でスケールしない**（電圧のまま出す）。音量は変換側の
-  `volume`（線形倍率）で調整。float 出力は ±1 超えでもクリップしない
-- **ffmpeg は既定で既存ファイルを上書きしない**ので `-y` を付ける
-- サンプルレートは `linearize` の tstep（= `.tran` の tstep）で決まる
-- 仮数は 24bit（`pcm_f32le`）。double のまま欲しいときは `pcm_f64le`
-- 参考: sox の `dat`（テキスト）入力は ±1.0 でクリップするため使わない
+- `linearize` をしないとサンプル間隔が不均一になり `-ar` が成立しない。
+- `write out.raw` にベクトルを列挙しないとプロット内の全ベクトルを書く。列挙しても time が先頭に入るので、ffmpeg は常に 2ch として読み `pan` で信号列（c1）だけ取る。
+- `-ar` は tstep の逆数と一致させる。既定は 96 kHz で `.tran {1/96000}` を使う。`10.4167u` のような丸めでも誤差は 0.0003% 程度。
+- **ngspice 側でスケールしない**。音量は `volume`（線形倍率）で調整する。32-bit float 出力は ±1 超えでもクリップしない。
+- **ffmpeg は既定で上書きしない**ので `-y` を付ける。
+
+## Anti-patterns
+
+- WAV 変換で time 列（c0）を信号として渡す。
+- `write` の出力ベクトルを増やしてチャンネル数を変える（`-ac 2` 前提が壊れる）。
+- `fourier` / `.four` を非整数周期の `tstop` で回して THD を信用する。
+- `.meas` を LTspice 流の `FROM 2m TO 4m` で書く。
