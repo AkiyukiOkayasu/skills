@@ -16,12 +16,6 @@ description: Use when running standalone ngspice (not KiCad's embedded simulator
 - 既定温度は TEMP=27°C。再現性が要る比較では `.temp` または `.options temp=` を明示する。
 - `.include` の相対パスはデッキのあるディレクトリ基準。生成スクリプトと出力先を揃える。
 
-## Use cases
-
-- 動作点・過渡・周波数特性を確認する。
-- 部品値やパラメータをスイープして表・グラフ・WAV にする。
-- シミュレーション結果が理論値や期待と合わないとき。
-
 ## Commands
 
 | Purpose | Command |

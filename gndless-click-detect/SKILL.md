@@ -1,21 +1,19 @@
 ---
 name: gndless-click-detect
-description: Use when verifying long 1 kHz sine recordings for clicks/pops in ADAT/ASRC hardware bring-up — for example after changing rate-tracking parameters, when click noise is reported, or for long-term stability checks — and when diagnosing periodic burst artifacts (rate-drift resync) in sample-rate-conversion chains.
+description: Use when verifying long 1 kHz sine recordings for clicks/pops in ADAT/ASRC hardware bring-up, including after rate-tracking changes and long-term stability checks, or when diagnosing periodic burst artifacts from rate-drift resync.
 ---
 
 # Gndless Click-Detect
 
-1kHzサイン波の長時間録音にクリック/プチノイズが含まれていないかを検証するCLIツール`click-detect`の使い方と結果の解釈を扱う。
+1kHzサイン波の長時間録音にクリック/プチノイズが含まれていないかを検証するCLIツール`click-detect`の使い方と結果の解釈。数分の試聴では気づかない長周期ノイズ(数十分周期のバースト)の検出が主目的。
 
 ## 使う場面
 
-以下のような「録音にクリックが混ざっていないか」を確かめたい場面で使う。数分の試聴では気づかない長周期ノイズ(数十分周期のバースト)の検出が主目的。
-
-- **ASRC/レート追従まわりのRTLを変更した直後**: `FILTER_SHIFT`やレベル補正、FIFO深さなどを変えたら、変更前後で同じ録音手順の1〜2時間録音を比較し、バーストが新規発生していないか確認する
-- **「音がおかしい」「プチノイズが鳴る」という報告を受けたとき**: 再現録音を解析して、クリックが実在するか・等間隔バーストか・単発かを切り分ける。等間隔ならASRCのドリフト補正(リセット動作)、単発なら外部要因(ソース/ケーブル/バッテリー等)の可能性が高い
-- **長時間安定性の確認**: ドリフト補正が正しく機能していること(数十分周期のリセットループが出ないこと)を、1〜2時間以上の録音で自動検証する
-- **録音セットアップの切り分け**: クロック同期の有無や録音経路(独立レコーダー vs PCオーディオ経由)を変えたとき、ノイズ源がFPGA側か測定系側かを比較する
-- **新しい録音を受け取ったときの定型チェック**: クリック有無・ピーク分布・時間別分布を一覧化して、前回の状態と差分を確認する
+- **ASRC/レート追従まわりのRTLを変更した直後**: `FILTER_SHIFT`、レベル補正、FIFO深さなどを変えたら、変更前後で同じ録音手順の1〜2時間録音を比較し、バーストが新規発生していないか確認する
+- **「音がおかしい」「プチノイズが鳴る」という報告時**: 再現録音を解析し、クリックが実在するか・等間隔バーストか・単発かを切り分ける。等間隔ならASRCのドリフト補正(リセット動作)、単発なら外部要因(ソース/ケーブル/バッテリー等)の可能性が高い
+- **長時間安定性の確認**: ドリフト補正が正しく機能していること(数十分周期のリセットループが出ないこと)を1〜2時間以上の録音で自動検証する
+- **録音セットアップの切り分け**: クロック同期の有無や経路(独立レコーダー vs PCオーディオ経由)を変え、ノイズ源がFPGA側か測定系側かを比較する
+- **新しい録音を受け取ったときの定型チェック**: クリック有無・ピーク分布・時間別分布を一覧化し、前回の状態と差分を確認する
 - **バグ修正の回帰確認**: 修正前後で「クリック0件」が維持されていることを記録として残す
 
 ## 基本情報

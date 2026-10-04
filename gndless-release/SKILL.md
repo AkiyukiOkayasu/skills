@@ -1,76 +1,28 @@
 ---
 name: gndless-release
-description: Use when preparing a repository release, including version bump verification, release notes updates, tagging, and pre-release validation.
+description: Use when preparing a repository release, including version bump verification, release notes, tagging, and pre-release validation.
 ---
 
 # Gndless Release
 
-このスキルは、リポジトリのリリース手順を扱う。
+リポジトリのリリース手順。タグはセマンティックバージョニングの `vX.Y.Z` (例: `v0.5.2`, `v0.6.0`) を使う。
 
-## 使う場面
+## 手順
 
-- リリース作業に入る前
-- リリースノートを更新する
-- タグを打つ
-- 前回リリースからの変更を確認する
+1. バージョン文字列や公開 artifact に影響する箇所、トップレベルの仕様変更点を確認
+2. `git log --oneline 前回タグ..HEAD` でリリースログの元になる変更履歴を取得
+3. リリースノートの Unreleased セクションを日付とバージョンタグへ確定し、コミット
+4. プロジェクト標準の検証を完了する (言語ごとの静的検証、生成物を含む統合ビルド、サイズ・タイミング制約、release artifact の生成確認)
+5. `git tag -a vX.Y.Z -m "vX.Y.Z"` して `git push origin <default-branch> --tags`
 
-## リリース前確認リスト
+## リリースノート
 
-以下を確認してからタグ付けする。
-
-1. バージョン文字列や公開 artifact に影響する箇所を確認
-2. トップレベルの仕様変更点を確認
-3. `git log --oneline 前回タグ..HEAD` でリリースログの元になる変更履歴を取得
-4. リリースノートの Unreleased セクションを更新し、日付とバージョンタグへ確定する
-
-## 独立レビュー
-
-- 前回タグからの広い変更の索引、release noteやdocumentの整理、リリース対象・コミット候補整理、巨視的な変更レビューでは、必要に応じて `codex-reviewer` subagentを利用する（読み取り専用、変更はしない）。
-- version、artifact、互換性、build・test・size・timingなどのrelease gate、個別差分の細かなレビュー、最終的なリリース可否、タグ付け、コミット、pushはopencodeが検証後に判断・実行する。
-- レビュー結果だけでリリース可否を決めず、必須のbuild、test、artifact検証を省略しない。
-
-## タグ命名規則
-
-- 形式: `vX.Y.Z` （セマンティックバージョニング）
-- 例: `v0.5.2`, `v0.6.0`
-
-## タグ付け手順
-
-```bash
-# リリースノートを更新したらコミット
-git add <release-notes-file>
-git commit -m "update: vX.Y.Z リリースノートを追記"
-
-# タグを打つ
-git tag -a vX.Y.Z -m "vX.Y.Z"
-
-# プッシュ
-git push origin <default-branch> --tags
-```
-
-## 最終確認
-
-タグを打つ前に、**必ず** プロジェクト標準の検証を完了する。
-
-- 言語ごとの静的検証
-- 生成物を含む統合ビルド
-- サイズ制約やタイミング制約の確認
-- リリース artifact が期待どおり生成されることの確認
-
-## リリースノートの書き方
-
-Unreleased セクションでは、少なくとも以下を整理する。
+Unreleased セクションでは少なくとも次を整理する。
 
 - 追加機能 / 変更点
 - 破壊的変更の有無
 - 既知の制約や移行上の注意
 - ハードウェア割り当てや UI アサインなど、利用者が確認すべき差分
-
-## 参照
-
-- リリースノート本体
-- リポジトリの workflow / release 手順
-- タグ前に必要な build / test 手順
 
 ## アンチパターン
 

@@ -28,8 +28,7 @@ puts "Timing-driven synthesis options..."
 set_option -timing_driven 1
 set_option -correct_hold_violation 1
 set_option -route_maxfan 50
-set_option -retiming 1
-set_option -pipe 1
+# -retiming / -pipe は headless gw_sh では no-op のため設定しない
 
 puts "IOB register packing..."
 set_option -ireg_in_iob 1

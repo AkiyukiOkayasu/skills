@@ -14,12 +14,6 @@ Veryl RTL の編集、検証、documentation、生成 RTL、dependency、publish
 - 構文だけでなく、生成回路の wire/register、bit width、signedness、logic depth、RAM/FF inference、reset cost、clock domain を確認
 - board、register map、Fmax、vendor flow など project 固有事項は project 側の skill を優先
 
-## 独立レビュー
-
-- 広い差分の巨視的レビューでは、必要に応じて `codex-reviewer` subagentを利用する（読み取り専用、変更はしない）。
-- RTL hierarchy、module間接続、生成物の入口、関連testの横断探索、承認済みPlanに沿う明確な修正・文書化はopencode自身で実施する。
-- diagnosticからsourceへの詳細追跡、width・signedness・CDC・reset・timing・primitive inferenceの詳細設計、generated RTLとの照合、source map追跡、細かな実装レビュー、`veryl fmt/check/test/build` による最終検証はopencodeが担当する。
-
 ## Documentation comments
 
 - doc comment を追加・編集する場合は [references/documentation.md](references/documentation.md) を読む
@@ -40,7 +34,7 @@ veryl build
 - 小さな unit test と native test を優先し、長い test は必要時だけ `veryl test --ignored`
 - backend 差の確認は `veryl test --backend-validate`、`--wave` は失敗再現・波形解析時だけ使用
 - system-level の性質だけ project 側の外部 simulation workflow を併用
-- `Veryl.toml` の `version` は手動で編集しない。バージョン更新は `veryl publish --bump` に委ねる
+- `Veryl.toml` の `version`、`Veryl.lock`、`Veryl.pub` は手動で編集しない。バージョン更新と publish は `veryl publish --bump` に委ねる
 - migration、dependency update、publish は [references/publishing.md](references/publishing.md) を読む
 
 ## Naming and types
@@ -70,7 +64,3 @@ veryl build
 - 下流 EDA の行番号は source map で Veryl へ戻し、toolchain 更新時は生成 RTL、filelist、module hierarchy の diff を確認
 - `veryl synth` は設計探索の概算として扱い、vendor synthesis、place-and-route、timing sign-off の代替にしない
 - FPGA では vendor primitive を wrapper へ隔離し、合成後に BRAM、DSP、carry、LUT などの inference report を確認
-
-## Anti-patterns
-
-- Veryl.pubを手動編集する
