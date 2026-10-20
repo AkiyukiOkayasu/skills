@@ -6,6 +6,8 @@
 #   - -retiming / -pipe は headless gw_sh では no-op なので含めない
 #   - run all だけでは gprj に保存されないため、run close まで実行する
 #   - PnR 設定 (-place_option / -route_option) を変えたら impl/pnr/cmd.do を削除してから再実行する
+#   - import_files は新規ファイルを gprj に追加するが、.f から消えたファイルは削除しない。
+#     生成 SV は rm_file で外してから import する (vendor/IP の .v や .cst/.sdc は消さない)
 
 set script_path [file normalize [info script]]
 set script_dir [file dirname $script_path]
@@ -48,6 +50,15 @@ set_option -loading_rate default
 set_option -multi_boot 0
 set_option -mspi_jump 0
 
+# 生成 SV だけを gprj から外し、最新の .f を import する
+set generated_src_dir [file join $script_dir "myProject/src"]
+foreach sv [glob -nocomplain -directory $generated_src_dir "*.sv"] {
+    catch {rm_file [file join "src" [file tail $sv]]}
+}
 import_files -fileList $filelist_path -force
+
 run all
 run close
+
+# .. を含む外部ファイルは run close 時に絶対パスで保存される。
+# gprj をリポジトリ管理する場合は、必要に応じて run close 後に相対パスへ戻す。
