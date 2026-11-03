@@ -31,11 +31,33 @@ Gowin EDA の Place & Route には配置アルゴリズムとルーティング�
 
 ## 実測の結論 (FPGA_Oscillator / GW5A-25 での事例)
 
-- `-place_option 3` + `-route_option 1` の組み合わせが最も良い結果になることが多い
-- `-place_option 2` (timing 優先) も単独で改善効果がある
-- 合成・PnR の実行時間は配置オプションにより +10 秒程度増える (PnR 全体が 8s → 19s 程度)。
-  フルビルド全体では誤差範囲
-- 効果は設計依存。必ず対象設計でスイープして確認する
+旧測定では `-place_option 3` + `-route_option 1` が Fmax 50.4 → 62.6 MHz で最良だった。
+しかし RTL が変わると優劣も入れ替わる。2026-10 に v0.6.1 / v0.7.0 / HEAD の3世代で
+再スイープした結果は次の通り。
+
+- バランス: `place 1` + `route 2`。3世代すべてで2番目に速く、Fmax は最良値より 5〜11% 低い
+- 速度優先: `place 1` + `route 1`。3世代すべてで最速。Fmax は 1/2 より 4〜7% 低い
+- Fmax 最大化は構成依存。8設定の比較では A=2/2 (66.1 MHz)、B=4/2 (76.0 MHz)、C=3/2 (76.7 MHz) が最良
+- `place 2` + `route 2` が常に最良とは限らない。`place 4` は構成による振れが大きい
+- 同じ構成Cでも環境で最良が入れ替わる (main は 2/2 78.3 MHz、worktree は 3/2 76.7 MHz)
+- `place 2` + `route 1` はバージョンで結果が反転するため既定にしない
+- `place 0` 系は最速だが Fmax が大きく落ちる (現行設計で 52 MHz)
+- 合成時間は設定によらず約14〜17秒。差は PnR 側で出る
+- 設定の優劣は RTL の変更で入れ替わるため、リリースごとに再スイープする
+
+### 絶対 Fmax はチェックアウト環境でも変わる
+
+同じ RTL・同じ設定でも、メインチェックアウトと `git worktree` で Fmax が変わった。
+
+- HEAD / place3 / route1: メイン 68.984 MHz、worktree 72.778 MHz
+- HEAD / place2 / route1: メイン 72.119 MHz、worktree 70.074 MHz
+- HEAD / place2 / route2: メイン 78.291 MHz、worktree 75.317 MHz
+- HEAD / place3 / route2: メイン 76.652 MHz、worktree 76.747 MHz
+- HEAD / place1 / route2: メイン 72.394 MHz、worktree 72.666 MHz
+
+プロジェクトの絶対パスや `impl` の状態が配置結果に影響すると考えられる。
+設定同士の比較は同一チェックアウト・同一環境で行う。CI とローカルの Fmax を
+そのまま比較しない。
 
 ## 重要な注意: cmd.do の設定永続化
 
@@ -69,8 +91,14 @@ rm impl/pnr/cmd.do   # PnR 前に必ず
 ## 測定の作法
 
 - 比較時は毎回 `cmd.do` を削除し、オプションを明示指定する
-- 同じ設計・同じオプションなら結果は決定的 (配置は同一解)。再実行しても同じ Fmax になる
-- Fmax は `fpgaOscillator.timing_paths` の setup slack から確認できる
+- 公平なフルビルド比較では `impl` ごと削除して合成からやり直す
+- 同じ環境・同じ設計・同じオプションなら結果は決定的 (配置は同一解)。再実行しても同じ Fmax になる
+- 環境 (パス、impl の状態、Gowin のバージョン) が変わると絶対 Fmax は変わりうる。比較は同一環境で行う
+- macOS で連続実行するときは `caffeinate` でスリープを防ぎ、経過時間は単調時計で測る。
+  壁時計だとスリープ中に数千秒の値が出ることがある
+- Fmax は `fpgaOscillator_tr_content.html` の `Max Frequency Summary` の `Actual Fmax`、
+  または `fpgaOscillator.timing_paths` の setup slack から確認できる
+- setup / hold の TNS が 0 かも確認する。Fmax だけ見て hold 違反を見落とさない
 - クリティカルパスが外部 IP (ソフトコア CPU など) 内部にある場合、合成オプション
   (`-retiming` / `-pipe` / `-route_maxfan`) では改善しないが、配置オプションの変更で
   ルーティング品質が変わり改善することがある (配置全体が変わるため)
