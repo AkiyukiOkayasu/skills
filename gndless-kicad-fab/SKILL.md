@@ -1,6 +1,6 @@
 ---
 name: gndless-kicad-fab
-description: Use for KiCad BOM, JLCPCB/Akizuki sourcing, assembly fields, and fabrication preparation in this user's projects. Covers LCSC fields, JLC Basic vs Extended, Akizuki fields, exclude flags, and bom/jlcpcb/lcsc handoff.
+description: Use for KiCad BOM, JLCPCB/Akizuki sourcing, assembly fields, and fabrication preparation in this user's projects. Covers LCSC fields, JLC Basic vs Extended, fee-waived Promotional Extended, Akizuki fields, exclude flags, and bom/jlcpcb/lcsc handoff.
 ---
 
 # Gndless KiCad Fab
@@ -8,6 +8,7 @@ description: Use for KiCad BOM, JLCPCB/Akizuki sourcing, assembly fields, and fa
 ## Part and assembly fields
 
 - For JLCPCB assembly, prefer electrically and mechanically suitable JLC Basic parts over Extended parts. Do not compromise required voltage, power, tolerance, package, or other design constraints to use a Basic part.
+- Treat Promotional Extended parts as equivalent to Basic when JLCPCB waives the Extended fee. The electrical and mechanical suitability checks still apply.
 - When a JLC Basic part is selected, fill the symbol's `LCSC` field with the exact LCSC part number (for example, `C50254`) and carry it into the BOM. Leave it blank when no JLC part is selected.
 - For parts sourced from Akizuki Denshi, add an `Akizuki` field with the Akizuki sales code (for example, `108290`).
 - Check both `Exclude from bill of materials` and `Exclude from position files` for Akizuki-sourced hand-assembled parts. Keep their reference, value, and footprint assigned; these flags only omit them from JLC assembly exports.
