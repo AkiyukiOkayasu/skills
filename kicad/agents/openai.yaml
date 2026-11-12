@@ -1,4 +1,0 @@
-interface:
-  display_name: "KiCad"
-  short_description: "KiCad の回路図・PCB 編集と検証"
-  default_prompt: "Use $kicad to edit this KiCad schematic or PCB while preserving the project's conventions."

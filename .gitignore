@@ -7,3 +7,24 @@ tmp
 paseo*
 frontend-design
 
+# BEGIN kicad-agent-skills
+# 外部 KiCad skill (~/.local/share/kicad-agent-skills/install.sh が管理)
+analyze-power-nets
+bom
+datasheets
+diagnose-routing-failures
+find-high-speed-nets
+identify-diff-pairs
+jlcpcb
+ki-stack-file-surgery
+ki-stack-footprints
+ki-stack-symbols
+kicad
+lcsc
+plan-pcb-placement
+plan-pcb-routing
+recommend-plane-mappings
+recommend-stackup
+review-routed-board
+spice
+# END kicad-agent-skills

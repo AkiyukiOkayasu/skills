@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gndless KiCad Fab"
+  short_description: "BOM・JLCPCB/Akizuki 調達・組立"
+  default_prompt: "Use $gndless-kicad-fab to prepare the BOM and JLCPCB/Akizuki assembly fields for this KiCad project."

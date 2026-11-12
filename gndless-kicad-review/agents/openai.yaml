@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gndless KiCad Review"
+  short_description: "KiCad 全体レビューと検証"
+  default_prompt: "Use $gndless-kicad-review to review this KiCad project and report blockers, warnings, and verification gaps."

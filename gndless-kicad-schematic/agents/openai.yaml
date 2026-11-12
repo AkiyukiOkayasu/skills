@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gndless KiCad Schematic"
+  short_description: "KiCad 回路図の規約・編集・ERC"
+  default_prompt: "Use $gndless-kicad-schematic to edit this KiCad schematic while preserving the project's conventions."

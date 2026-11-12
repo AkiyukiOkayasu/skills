@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gndless KiCad PCB"
+  short_description: "4層PCBの配置・スタックアップ・配線"
+  default_prompt: "Use $gndless-kicad-pcb to place or route this KiCad board while preserving the project's conventions."

@@ -1,9 +1,9 @@
 ---
-name: kicad
-description: Use for KiCad schematic and PCB work in this user's projects, including part fields, value notation, power symbols, layout, and CLI validation.
+name: gndless-kicad-schematic
+description: Use for KiCad schematic capture, editing, and schematic review in this user's projects. Covers symbol choice, RKM values, power symbols, page and wiring conventions, ERC, and handoff to kicad/spice/datasheets. For LCSC/Akizuki/assembly fields, use gndless-kicad-fab.
 ---
 
-# KiCad
+# Gndless KiCad Schematic
 
 Inspect the existing project and its conventions before editing. Preserve its established structure, and avoid replacing project files wholesale when a focused edit is possible.
 
@@ -12,13 +12,6 @@ Inspect the existing project and its conventions before editing. Preserve its es
 - Use `Device:R_Small` and `Device:C_Small` for ordinary SMD resistors and capacitors. Use `Device:R` and `Device:C` only when the part is intentionally through-hole or needs a larger package for current, power, or another design reason.
 - Use `Connector_Generic:Conn_01xNN` for pin headers, Euroblocks, and other ordinary multi-pin connectors, and assign the physical footprint separately. Reserve custom connector symbols for genuinely nonstandard pin maps such as card edges.
 - For DOAs, transformers, card edges, and other nonstandard pin maps, use the matching authored symbol and footprint, and preserve the exact library identifiers. Show the pin numbers, lead colors, or terminal names needed to wire and review the part.
-
-## Part and assembly fields
-
-- For JLCPCB assembly, prefer electrically and mechanically suitable JLC Basic parts over Extended parts. Do not compromise required voltage, power, tolerance, package, or other design constraints to use a Basic part.
-- When a JLC Basic part is selected, fill the symbol's `LCSC` field with the exact LCSC part number (for example, `C50254`) and carry it into the BOM. Leave it blank when no JLC part is selected.
-- For parts sourced from Akizuki Denshi, add an `Akizuki` field with the Akizuki sales code (for example, `108290`).
-- Check both `Exclude from bill of materials` and `Exclude from position files` for Akizuki-sourced hand-assembled parts. Keep their reference, value, and footprint assigned; these flags only omit them from JLC assembly exports.
 
 ## Value notation
 
@@ -46,17 +39,19 @@ Inspect the existing project and its conventions before editing. Preserve its es
 - Prefer the user's authored symbol and footprint libraries, especially the Akiyuki libraries, whenever a matching project asset exists.
 - Finish placement to a clean, aligned, reviewable state; do not hand over a rough draft for the user to complete.
 
-## PCB
-
-- Prefer copper zones. Use a GND zone by default where the layer stack and routing allow, and consider power zones where they make sense.
-- Choose zone layers and coverage from the actual copper-layer count and routing constraints; do not assume a plane exists on a particular layer. If a zone cannot be used effectively, explain the constraint and route the net instead.
-- After adding or changing zones, refill them and check that the intended nets connect and clearances are preserved.
-
 ## Editing and validation
 
 - Do not assume existing generator scripts are required or authoritative. Reuse them only when they are maintainable and fit the requested edit.
 - For focused schematic property changes such as `Value`, `LCSC`, or `Footprint`, edit the native S-expression while preserving UUIDs, symbol instances, pins, and connectivity. Assigning a footprint in the schematic does not replace a footprint already placed on the PCB.
-- For PCB footprint replacement, update the complete placed footprint and preserve board identity, schematic path, and pad-to-net mapping. Prefer KiCad's Update PCB from Schematic when it applies cleanly. Never replace only the library identifier when pad geometry changes.
-- Use `pcbnew` scripting for repeatable geometric operations when the supported KiCad runtime is available. Do not assume the system Python can load KiCad's native modules.
-- On macOS, `kicad-cli` may be inside the app bundle without being on `PATH` (for example, `/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli`). Use it for ERC, DRC, netlist export, and PDF/SVG export; it is not a general editor.
-- After direct or scripted edits, run the relevant checks and inspect an exported drawing or the GUI when practical. Report any checks that could not be run.
+- Use `ki-stack-file-surgery` for structural or multi-object changes.
+- Use `kicad-cli` for ERC, netlist export, and PDF/SVG export; it is not a general editor.
+- After direct or scripted edits, run ERC and inspect an exported drawing or the GUI when practical. Report any checks that could not be run.
+- For LCSC, Akizuki, and assembly exclude flags, follow `gndless-kicad-fab`.
+
+## Third-party handoff
+
+- `kicad` for schematic analysis and review.
+- `spice` for automatic testbenches from analyzer output.
+- `datasheets` for structured MPN extraction.
+- Do not use `digikey`, `mouser`, `element14`, `pcbway`, or `emc`.
+- Full routing table: `~/.agents/skills/gndless-kicad-review/references/third-party-routing.md`.
